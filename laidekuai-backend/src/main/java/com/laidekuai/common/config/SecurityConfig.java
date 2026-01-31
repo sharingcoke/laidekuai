@@ -53,8 +53,8 @@ public class SecurityConfig {
             // 禁用CSRF（前后端分离，使用JWT）
             .csrf(csrf -> csrf.disable())
 
-            // 禁用CORS（使用自定义CORS配置）
-            .cors(cors -> cors.disable())
+            // CORS由CorsConfig处理，这里不配置
+            // 注意：不能禁用CORS，否则CorsConfig不会生效
 
             // 会话管理：无状态（使用JWT）
             .sessionManagement(session ->
