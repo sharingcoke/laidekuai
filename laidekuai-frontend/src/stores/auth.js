@@ -24,10 +24,12 @@ export const useAuthStore = defineStore('auth', () => {
     const res = await authApi.login(credentials)
 
     if (res.code === 0) {
-      token.value = res.data.token
+      // 后端返回 { accessToken, tokenType, expiresIn, user }
+      const bearer = `${res.data.tokenType || 'Bearer'} ${res.data.accessToken}`
+      token.value = bearer
       user.value = res.data.user
 
-      localStorage.setItem('token', res.data.token)
+      localStorage.setItem('token', bearer)
       localStorage.setItem('user', JSON.stringify(res.data.user))
 
       return true
@@ -43,12 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
     const res = await authApi.register(userData)
 
     if (res.code === 0) {
-      token.value = res.data.token
-      user.value = res.data.user
-
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('user', JSON.stringify(res.data.user))
-
+      // 注册成功后交给用户去登录
       return true
     }
 

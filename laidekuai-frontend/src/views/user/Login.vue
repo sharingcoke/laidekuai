@@ -24,8 +24,16 @@ const handleLogin = async () => {
     ElMessage.warning('请输入用户名')
     return
   }
+  if (form.value.username.length < 3 || form.value.username.length > 32) {
+    ElMessage.warning('用户名长度需在3-32个字符')
+    return
+  }
   if (!form.value.password) {
     ElMessage.warning('请输入密码')
+    return
+  }
+  if (form.value.password.length < 6 || form.value.password.length > 32) {
+    ElMessage.warning('密码长度需在6-32个字符')
     return
   }
 

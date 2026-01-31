@@ -30,20 +30,24 @@ const handleRegister = async () => {
     ElMessage.warning('用户名至少3个字符')
     return
   }
+  if (form.value.username.length > 32) {
+    ElMessage.warning('用户名最多32个字符')
+    return
+  }
   if (!form.value.password) {
     ElMessage.warning('请输入密码')
     return
   }
-  if (form.value.password.length < 6) {
-    ElMessage.warning('密码至少6个字符')
+  if (form.value.password.length < 6 || form.value.password.length > 32) {
+    ElMessage.warning('密码长度需在6-32个字符')
     return
   }
   if (form.value.password !== form.value.confirmPassword) {
     ElMessage.warning('两次密码输入不一致')
     return
   }
-  if (!form.value.nickName) {
-    ElMessage.warning('请输入昵称')
+  if (form.value.nickName && form.value.nickName.length > 32) {
+    ElMessage.warning('昵称最多32个字符')
     return
   }
 
@@ -57,11 +61,13 @@ const handleRegister = async () => {
     })
 
     if (success) {
-      ElMessage.success('注册成功')
+      ElMessage.success('注册成功，请登录')
 
-      // 跳转到之前的页面或首页
-      const redirect = route.query.redirect || '/'
-      router.push(redirect)
+      // 跳转登录页并带上 redirect
+      router.push({
+        path: '/login',
+        query: { redirect: route.query.redirect }
+      })
     }
   } catch (error) {
     console.error('注册失败:', error)
