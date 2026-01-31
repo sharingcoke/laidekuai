@@ -200,7 +200,9 @@ public class GoodsServiceImpl implements GoodsService {
                 request.getKeyword(), request.getCategoryId(), request.getPage(), request.getSize());
 
         // 1. 构建分页参数
-        Page<Goods> pageParam = new Page<>(request.getPage(), request.getSize());
+        long pageNo = (request.getPage() == null || request.getPage() <= 0) ? 1 : request.getPage();
+        long size = (request.getSize() == null || request.getSize() <= 0) ? 10 : Math.min(request.getSize(), 50);
+        Page<Goods> pageParam = new Page<>(pageNo, size);
 
         // 2. 构建查询条件
         LambdaQueryWrapper<Goods> wrapper = new LambdaQueryWrapper<>();

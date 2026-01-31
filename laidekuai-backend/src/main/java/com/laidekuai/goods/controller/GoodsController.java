@@ -7,8 +7,7 @@ import com.laidekuai.goods.dto.GoodsSearchRequest;
 import com.laidekuai.goods.dto.GoodsUpdateRequest;
 import com.laidekuai.goods.entity.Goods;
 import com.laidekuai.goods.service.GoodsService;
-import com.laidekuai.user.entity.User;
-import com.laidekuai.user.service.UserService;
+import com.laidekuai.common.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,28 +27,20 @@ import org.springframework.web.bind.annotation.*;
 public class GoodsController {
 
     private final GoodsService goodsService;
-    private final UserService userService;
 
-    /**
-     * 获取当前用户ID
-     */
-    private Long getCurrentUserId(HttpServletRequest request) {
-        Object userIdObj = request.getAttribute("userId");
-        if (userIdObj == null) {
-            throw new IllegalArgumentException("用户未登录");
-        }
-        return Long.parseLong(userIdObj.toString());
+    private Long currentUserId() {
+        return SecurityUtils.getCurrentUserId();
     }
 
     /**
      * 创建商品（卖家）
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     public Result<Goods> createGoods(
             @Valid @RequestBody GoodsCreateRequest request,
             HttpServletRequest httpRequest) {
-        Long sellerId = getCurrentUserId(httpRequest);
+        Long sellerId = currentUserId();
         return goodsService.createGoods(request, sellerId);
     }
 
@@ -57,12 +48,12 @@ public class GoodsController {
      * 更新商品（卖家）
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     public Result<Goods> updateGoods(
             @PathVariable Long id,
             @Valid @RequestBody GoodsUpdateRequest request,
             HttpServletRequest httpRequest) {
-        Long sellerId = getCurrentUserId(httpRequest);
+        Long sellerId = currentUserId();
         return goodsService.updateGoods(id, request, sellerId);
     }
 
@@ -70,11 +61,11 @@ public class GoodsController {
      * 删除商品（卖家）- 软删除
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     public Result<Void> deleteGoods(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long sellerId = getCurrentUserId(httpRequest);
+        Long sellerId = currentUserId();
         return goodsService.deleteGoods(id, sellerId);
     }
 
@@ -102,7 +93,7 @@ public class GoodsController {
     public Result<Void> submitForAudit(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long sellerId = getCurrentUserId(httpRequest);
+        Long sellerId = currentUserId();
         return goodsService.submitForAudit(id, sellerId);
     }
 
@@ -114,7 +105,7 @@ public class GoodsController {
     public Result<Void> approveGoods(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long adminId = getCurrentUserId(httpRequest);
+        Long adminId = currentUserId();
         return goodsService.approveGoods(id, adminId);
     }
 
@@ -127,7 +118,7 @@ public class GoodsController {
             @PathVariable Long id,
             @RequestParam String reason,
             HttpServletRequest httpRequest) {
-        Long adminId = getCurrentUserId(httpRequest);
+        Long adminId = currentUserId();
         return goodsService.rejectGoods(id, reason, adminId);
     }
 
@@ -135,11 +126,11 @@ public class GoodsController {
      * 手动下架商品（卖家）
      */
     @PostMapping("/{id}/offline")
-    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     public Result<Void> offlineGoods(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long sellerId = getCurrentUserId(httpRequest);
+        Long sellerId = currentUserId();
         return goodsService.offlineGoods(id, sellerId);
     }
 }

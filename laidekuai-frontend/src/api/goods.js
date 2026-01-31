@@ -72,7 +72,7 @@ export default {
    */
   approve(id) {
     return request({
-      url: `/admin/goods/${id}/approve`,
+      url: `/goods/admin/${id}/approve`,
       method: 'post'
     })
   },
@@ -82,7 +82,7 @@ export default {
    */
   reject(id, reason) {
     return request({
-      url: `/admin/goods/${id}/reject`,
+      url: `/goods/admin/${id}/reject`,
       method: 'post',
       data: { reason }
     })
