@@ -42,6 +42,12 @@ const routes = [
     meta: { title: '购物车 - 来得快', requiresAuth: true }
   },
   {
+    path: '/order/confirm',
+    name: 'OrderConfirm',
+    component: () => import('@/views/order/OrderConfirm.vue'),
+    meta: { title: '确认订单 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/orders',
     name: 'OrderList',
     component: () => import('@/views/order/OrderList.vue'),
@@ -52,6 +58,24 @@ const routes = [
     name: 'Profile',
     component: () => import('@/views/user/Profile.vue'),
     meta: { title: '个人中心 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/my-goods',
+    name: 'MyGoods',
+    component: () => import('@/views/user/MyGoods.vue'),
+    meta: { title: '我发布的商品 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/goods/edit/:id',
+    name: 'GoodsEdit',
+    component: () => import('@/views/goods/GoodsPublish.vue'), // 复用发布页面
+    meta: { title: '编辑商品 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/goods/publish',
+    name: 'GoodsPublish',
+    component: () => import('@/views/goods/GoodsPublish.vue'),
+    meta: { title: '发布商品 - 来得快', requiresAuth: true }
   },
   {
     path: '/admin/users',

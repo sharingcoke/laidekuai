@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.review.mapper.ReviewMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.laidekuai.review.entity.Review">
+        <id column="id" property="id"/>
+        <result column="order_id" property="orderId"/>
+        <result column="order_item_id" property="orderItemId"/>
+        <result column="goods_id" property="goodsId"/>
+        <result column="buyer_id" property="buyerId"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="rating" property="rating"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="is_anonymous" property="isAnonymous"/>
+        <result column="reply" property="reply"/>
+        <result column="reply_time" property="replyTime"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, order_id, order_item_id, goods_id, buyer_id, seller_id, rating, content,
+        images, is_anonymous, reply, reply_time, created_at, updated_at, deleted
+    </sql>
+
+    <!-- 查询商品评价列表 -->
+    <select id="selectByGoodsId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM review
+        WHERE goods_id = #{goodsId}
+          AND deleted = 0
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询订单评价数量 -->
+    <select id="countByOrderId" resultType="int">
+        SELECT COUNT(*)
+        FROM review
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+    </select>
+
+    <!-- 查询订单项评价数量 -->
+    <select id="countByOrderItemId" resultType="int">
+        SELECT COUNT(*)
+        FROM review
+        WHERE order_item_id = #{orderItemId}
+          AND deleted = 0
+    </select>
+
+    <!-- 计算商品平均评分 -->
+    <select id="getAverageRatingByGoodsId" resultType="java.lang.Double">
+        SELECT AVG(rating)
+        FROM review
+        WHERE goods_id = #{goodsId}
+          AND deleted = 0
+    </select>
+
+</mapper>

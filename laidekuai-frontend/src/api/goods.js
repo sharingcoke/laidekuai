@@ -85,6 +85,31 @@ export default {
       url: `/goods/admin/${id}/reject`,
       method: 'post',
       data: { reason }
-    })
-  }
+    return request({
+        url: `/goods/admin/${id}/reject`,
+        method: 'post',
+        data: { reason }
+      })
+    },
+
+      /**
+       * 我的商品列表
+       */
+      listMy(params) {
+      return request({
+        url: '/goods/my',
+        method: 'get',
+        params
+      })
+    },
+
+      /**
+       * 下架商品
+       */
+      offline(id) {
+      return request({
+        url: `/goods/${id}/offline`,
+        method: 'post'
+      })
+    }
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.message.mapper.MessageMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.laidekuai.message.entity.Message">
+        <id column="id" property="id"/>
+        <result column="goods_id" property="goodsId"/>
+        <result column="sender_id" property="senderId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 查询商品留言（仅主留言） -->
+    <select id="selectByGoodsId" resultMap="BaseResultMap">
+        SELECT * FROM message
+        WHERE goods_id = #{goodsId}
+          AND parent_id IS NULL
+          AND deleted = 0
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询留言的回复 -->
+    <select id="selectReplies" resultMap="BaseResultMap">
+        SELECT * FROM message
+        WHERE parent_id = #{parentId}
+          AND deleted = 0
+        ORDER BY created_at ASC
+    </select>
+
+</mapper>

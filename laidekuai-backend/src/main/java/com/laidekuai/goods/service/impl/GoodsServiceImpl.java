@@ -383,4 +383,43 @@ public class GoodsServiceImpl implements GoodsService {
 
         return Result.success();
     }
+
+    @Override
+    public Result<PageResult<Goods>> listMyGoods(Long sellerId, Long page, Long size, String status, String keyword) {
+        // 1. 分页参数
+        long pageNo = (page == null || page <= 0) ? 1 : page;
+        long pageSize = (size == null || size <= 0) ? 10 : size;
+        Page<Goods> pageParam = new Page<>(pageNo, pageSize);
+
+        // 2. 查询条件
+        LambdaQueryWrapper<Goods> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Goods::getSellerId, sellerId);
+        
+        // 状态筛选
+        if (StringUtils.hasText(status)) {
+             try {
+                 GoodsStatus statusEnum = GoodsStatus.valueOf(status);
+                 wrapper.eq(Goods::getStatus, statusEnum);
+             } catch (IllegalArgumentException e) {
+                 // ignore invalid status
+             }
+        }
+
+        // 关键词
+        if (StringUtils.hasText(keyword)) {
+            wrapper.like(Goods::getTitle, keyword);
+        }
+
+        wrapper.orderByDesc(Goods::getCreatedAt);
+
+        // 3. 执行查询
+        Page<Goods> pageResult = goodsMapper.selectPage(pageParam, wrapper);
+
+        return Result.success(PageResult.of(
+                pageResult.getRecords(),
+                pageResult.getTotal(),
+                pageResult.getCurrent(),
+                pageResult.getSize()
+        ));
+    }
 }

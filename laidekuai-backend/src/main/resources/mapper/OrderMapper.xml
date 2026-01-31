@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.order.mapper.OrderMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.laidekuai.order.entity.Order">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="buyer_id" property="buyerId"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="shipping_fee" property="shippingFee"/>
+        <result column="status" property="status"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="cancel_time" property="cancelTime"/>
+        <result column="dispute_time" property="disputeTime"/>
+        <result column="remark" property="remark"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="address_id" property="addressId"/>
+        <result column="receiver_name" property="receiverName"/>
+        <result column="receiver_phone" property="receiverPhone"/>
+        <result column="receiver_address" property="receiverAddress"/>
+        <result column="is_settled" property="isSettled"/>
+        <result column="settled_time" property="settledTime"/>
+        <result column="refund_request_count" property="refundRequestCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, order_no, buyer_id, seller_id, total_amount, shipping_fee, status,
+        cancel_reason, cancel_time, dispute_time, remark, pay_time, address_id,
+        receiver_name, receiver_phone, receiver_address, is_settled, settled_time,
+        refund_request_count, created_at, updated_at, deleted
+    </sql>
+
+    <!-- 统计买家活跃订单数 -->
+    <select id="countActiveOrders" resultType="int">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE buyer_id = #{buyerId}
+          AND status IN ('PENDING_PAY', 'PAID')
+          AND deleted = 0
+    </select>
+
+    <!-- 根据订单号查询 -->
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM orders
+        WHERE order_no = #{orderNo}
+          AND deleted = 0
+    </select>
+
+</mapper>

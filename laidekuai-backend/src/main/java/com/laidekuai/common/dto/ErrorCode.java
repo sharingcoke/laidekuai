@@ -57,6 +57,10 @@ public enum ErrorCode {
     REVIEW_TIMEOUT(40502, "超过评价时限（30天）"),
     REVIEW_NOT_FOUND(40503, "评价不存在"),
 
+    // ========== 地址相关 (407xx) ==========
+    ADDRESS_NOT_FOUND(40701, "地址不存在"),
+    ADDRESS_LIMIT_EXCEEDED(40702, "地址数量已达上限"),
+
     // ========== 文件上传相关 (406xx) ==========
     FILE_TYPE_ERROR(40601, "文件类型不支持"),
     FILE_SIZE_EXCEEDED(40602, "文件大小超过限制"),

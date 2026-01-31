@@ -1,0 +1,58 @@
+import request from '@/utils/request'
+
+/**
+ * 地址相关API
+ */
+export default {
+    /**
+     * 获取地址列表
+     */
+    list() {
+        return request({
+            url: '/address',
+            method: 'get'
+        })
+    },
+
+    /**
+     * 添加地址
+     */
+    add(data) {
+        return request({
+            url: '/address',
+            method: 'post',
+            data
+        })
+    },
+
+    /**
+     * 更新地址
+     */
+    update(id, data) {
+        return request({
+            url: `/address/${id}`,
+            method: 'put',
+            data
+        })
+    },
+
+    /**
+     * 删除地址
+     */
+    delete(id) {
+        return request({
+            url: `/address/${id}`,
+            method: 'delete'
+        })
+    },
+
+    /**
+     *设为默认地址
+     */
+    setDefault(id) {
+        return request({
+            url: `/address/${id}/default`,
+            method: 'post'
+        })
+    }
+}

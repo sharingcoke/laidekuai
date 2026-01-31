@@ -133,4 +133,18 @@ public class GoodsController {
         Long sellerId = currentUserId();
         return goodsService.offlineGoods(id, sellerId);
     }
+
+    /**
+     * 查询我的商品列表
+     */
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
+    public Result<PageResult<Goods>> listMyGoods(
+            @RequestParam(defaultValue = "1") Long page,
+            @RequestParam(defaultValue = "10") Long size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword) {
+        Long sellerId = currentUserId();
+        return goodsService.listMyGoods(sellerId, page, size, status, keyword);
+    }
 }

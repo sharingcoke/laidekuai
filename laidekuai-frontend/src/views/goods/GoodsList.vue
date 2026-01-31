@@ -1,177 +1,247 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import goodsApi from '@/api/goods'
+import { Search } from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+// ÊêúÁ¥¢ÂèÇÊï∞
+const queryParams = reactive({
+  page: 1,
+  size: 12,
+  keyword: ''
+})
 
 const loading = ref(false)
-const goods = ref([])
-const total = ref(0)
-const page = ref(1)
-const size = ref(12)
-const keyword = ref('')
-const placeholder = 'https://via.placeholder.com/300x180?text=No+Image'
+const goodsList = ref([])
+const total = ref(0) // ÊÄªÊù°Êï∞
 
-const getCover = (imageJson) => {
-  if (!imageJson) return placeholder
-  try {
-    const arr = JSON.parse(imageJson)
-    return arr && arr[0] ? arr[0] : placeholder
-  } catch (e) {
-    return placeholder
-  }
-}
-
-const fetchList = async () => {
+/**
+ * Ëé∑ÂèñÂïÜÂìÅÂàóË°®
+ */
+const fetchGoods = async () => {
   loading.value = true
   try {
-    const res = await goodsApi.list({ page: page.value, size: size.value, keyword: keyword.value || undefined })
+    const res = await goodsApi.list(queryParams)
     if (res.code === 0) {
-      goods.value = res.data.records || []
-      total.value = res.data.total || 0
+      goodsList.value = res.data.records
+      total.value = res.data.total
     }
-  } catch (e) {
-    ElMessage.error('º”‘ÿ…Ã∆∑¡–±Ì ß∞‹')
-    console.error(e)
+  } catch (error) {
+    console.error('Ëé∑ÂèñÂïÜÂìÅÂàóË°®Â§±Ë¥•:', error)
   } finally {
     loading.value = false
   }
 }
 
+/**
+ * ÊêúÁ¥¢
+ */
 const handleSearch = () => {
-  page.value = 1
-  fetchList()
+  queryParams.page = 1
+  fetchGoods()
 }
 
-const handleSizeChange = (val) => {
-  size.value = val
-  page.value = 1
-  fetchList()
+/**
+ * ÂàÜÈ°µÊîπÂèò
+ */
+const handleCurrentChange = (page) => {
+  queryParams.page = page
+  fetchGoods()
 }
 
-const handleCurrentChange = (val) => {
-  page.value = val
-  fetchList()
+/**
+ * Ë∑≥ËΩ¨ËØ¶ÊÉÖ
+ */
+const goToDetail = (id) => {
+  router.push(`/goods/${id}`) // Ë∑ØÁî±ÈÖçÁΩÆÈúÄÂåπÈÖç /goods/:id
 }
 
-onMounted(fetchList)
+/**
+ * Ëé∑Âèñ‰∏ªÂõæ
+ */
+const getMainImage = (imageUrls) => {
+  if (!imageUrls) return 'https://via.placeholder.com/300x300?text=No+Image'
+  try {
+    const urls = JSON.parse(imageUrls)
+    return urls[0] || 'https://via.placeholder.com/300x300?text=No+Image'
+  } catch (e) {
+    return 'https://via.placeholder.com/300x300?text=Error'
+  }
+}
+
+/**
+ * Ê†ºÂºèÂåñ‰ª∑Ê†º
+ */
+const formatPrice = (price) => {
+  return typeof price === 'number' ? price.toFixed(2) : '0.00'
+}
+
+onMounted(() => {
+  fetchGoods()
+})
 </script>
 
 <template>
-  <div class="goods-page">
-    <div class="page-header">
-      <h2>∑¢œ÷∫√ŒÔ</h2>
-      <div class="search-box">
-        <el-input
-          v-model="keyword"
-          placeholder="À—À˜…Ã∆∑πÿº¸¥ "
-          clearable
-          size="large"
-          @clear="handleSearch"
-          @keyup.enter="handleSearch"
+  <div class="goods-list-page">
+    <div class="search-bar">
+      <el-input
+        v-model="queryParams.keyword"
+        placeholder="ÊêúÁ¥¢ÂïÜÂìÅ..."
+        class="search-input"
+        size="large"
+        clearable
+        @keyup.enter="handleSearch"
+      >
+        <template #append>
+          <el-button :icon="Search" @click="handleSearch" />
+        </template>
+      </el-input>
+    </div>
+
+    <div class="goods-container" v-loading="loading">
+      <el-empty v-if="!loading && goodsList.length === 0" description="ÊöÇÊó†ÂïÜÂìÅ" />
+      
+      <div v-else class="goods-grid">
+        <el-card
+          v-for="item in goodsList"
+          :key="item.id"
+          class="goods-card"
+          :body-style="{ padding: '0px' }"
+          shadow="hover"
+          @click="goToDetail(item.id)"
         >
-          <template #append>
-            <el-button type="primary" @click="handleSearch">À—À˜</el-button>
-          </template>
-        </el-input>
+          <div class="goods-image-wrapper">
+             <el-image 
+               :src="getMainImage(item.imageUrls)" 
+               fit="cover" 
+               class="goods-image"
+               loading="lazy"
+             >
+               <template #placeholder>
+                 <div class="image-placeholder">Âä†ËΩΩ‰∏≠...</div>
+               </template>
+               <template #error>
+                 <div class="image-error">Failed</div>
+               </template>
+             </el-image>
+          </div>
+          <div class="goods-info">
+            <h3 class="goods-title" :title="item.title">{{ item.title }}</h3>
+            <div class="goods-price">¬• {{ formatPrice(item.price) }}</div>
+            <div class="goods-meta">
+              <span>{{ item.sellerName || 'ÂçñÂÆ∂' }}</span>
+              <span class="stock">Â∫ìÂ≠ò: {{ item.stock }}</span>
+            </div>
+          </div>
+        </el-card>
       </div>
     </div>
 
-    <el-skeleton v-if="loading" rows="6" animated />
-
-    <el-empty v-else-if="!goods.length" description="‘›Œﬁ…Ã∆∑" />
-
-    <div v-else class="goods-grid">
-      <el-card
-        v-for="item in goods"
-        :key="item.id"
-        shadow="hover"
-        class="goods-card"
-        @click=".push(/goods/)"
-      >
-        <div class="cover" :style="{ backgroundImage: url() }"></div>
-        <div class="title" :title="item.title">{{ item.title }}</div>
-        <div class="meta">
-          <span class="price">£§{{ Number(item.price || 0).toFixed(2) }}</span>
-          <span class="stock">ø‚¥Ê {{ item.stock ?? '-' }}</span>
-        </div>
-      </el-card>
-    </div>
-
-    <div class="pagination" v-if="total > 0">
+    <div class="pagination-container" v-if="total > 0">
       <el-pagination
-        background
-        layout="total, sizes, prev, pager, next"
+        v-model:current-page="queryParams.page"
+        v-model:page-size="queryParams.size"
+        layout="prev, pager, next, total"
         :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[12, 24, 36, 48]"
-        @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
+        background
       />
     </div>
   </div>
 </template>
 
 <style scoped>
-.goods-page {
-  padding: 24px;
+.goods-list-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
-.page-header {
+
+.search-bar {
+  margin-bottom: 30px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 16px;
+  justify-content: center;
 }
-.page-header h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
+
+.search-input {
+  max-width: 600px;
+  width: 100%;
 }
-.search-box {
-  flex: 1;
-}
+
 .goods-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
+
 .goods-card {
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform 0.2s;
 }
+
 .goods-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
 }
-.cover {
+
+.goods-image-wrapper {
+  height: 260px;
+  overflow: hidden;
+  position: relative;
+  background: #f5f7fa;
+}
+
+.goods-image {
   width: 100%;
-  height: 150px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 6px;
+  height: 100%;
+  display: block;
 }
-.title {
-  margin-top: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
+
+.image-placeholder, .image-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #909399;
+  font-size: 14px;
+}
+
+.goods-info {
+  padding: 14px;
+}
+
+.goods-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #303133;
   line-height: 1.4;
-  min-height: 42px;
+  height: 44px; /* 2 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
-.meta {
+
+.goods-price {
+  font-size: 20px;
+  color: #f56c6c;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.goods-meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-  color: #666;
+  font-size: 12px;
+  color: #909399;
 }
-.price {
-  color: #ff6b3b;
-  font-weight: 700;
-}
-.pagination {
-  margin-top: 20px;
+
+.pagination-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  margin-top: 20px;
 }
 </style>

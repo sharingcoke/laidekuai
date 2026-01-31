@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 登录
    */
-  async login(credentials) {
+  const login = async (credentials) => {
     const res = await authApi.login(credentials)
 
     if (res.code === 0) {
@@ -41,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 注册
    */
-  async register(userData) {
+  const register = async (userData) => {
     const res = await authApi.register(userData)
 
     if (res.code === 0) {
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 获取当前用户信息
    */
-  async fetchCurrentUser() {
+  const fetchCurrentUser = async () => {
     const res = await authApi.getCurrentUser()
 
     if (res.code === 0) {
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 退出登录
    */
-  logout() {
+  const logout = () => {
     token.value = ''
     user.value = null
 

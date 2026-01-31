@@ -95,4 +95,16 @@ public interface GoodsService {
      * @return 下架结果
      */
     Result<Void> offlineGoods(Long goodsId, Long sellerId);
+
+    /**
+     * 查询我的商品列表
+     *
+     * @param sellerId 卖家ID
+     * @param page 页码
+     * @param size 每页大小
+     * @param status 状态
+     * @param keyword 关键词
+     * @return 商品列表
+     */
+    Result<PageResult<Goods>> listMyGoods(Long sellerId, Long page, Long size, String status, String keyword);
 }

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.order.mapper.OrderItemMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.laidekuai.order.entity.OrderItem">
+        <id column="id" property="id"/>
+        <result column="order_id" property="orderId"/>
+        <result column="goods_id" property="goodsId"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="goods_title" property="goodsTitle"/>
+        <result column="goods_cover" property="goodsCover"/>
+        <result column="price" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="amount" property="amount"/>
+        <result column="item_status" property="itemStatus"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="ship_company" property="shipCompany"/>
+        <result column="tracking_no" property="trackingNo"/>
+        <result column="ship_time" property="shipTime"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, order_id, goods_id, seller_id, goods_title, goods_cover, price, quantity,
+        amount, item_status, order_status, ship_company, tracking_no, ship_time,
+        created_at, updated_at, deleted
+    </sql>
+
+    <!-- 根据订单ID查询订单项 -->
+    <select id="selectByOrderId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM order_item
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+    </select>
+
+    <!-- 批量插入订单项 -->
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_item (order_id, goods_id, seller_id, goods_title, goods_cover,
+            price, quantity, amount, item_status, order_status, created_at)
+        VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.orderId}, #{item.goodsId}, #{item.sellerId}, #{item.goodsTitle},
+             #{item.goodsCover}, #{item.price}, #{item.quantity}, #{item.amount},
+             #{item.itemStatus}, #{item.orderStatus}, NOW())
+        </foreach>
+    </insert>
+
+    <!-- 根据订单ID更新状态 -->
+    <update id="updateStatusByOrderId">
+        UPDATE order_item
+        SET item_status = #{status},
+            order_status = #{status},
+            updated_at = NOW()
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+    </update>
+
+</mapper>
