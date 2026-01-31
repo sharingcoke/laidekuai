@@ -57,7 +57,7 @@ export default {
   },
 
   /**
-   * 商品列表/搜索
+   * 商品列表/搜索 (公开)
    */
   list(params) {
     return request({
@@ -85,31 +85,38 @@ export default {
       url: `/goods/admin/${id}/reject`,
       method: 'post',
       data: { reason }
+    })
+  },
+
+  /**
+   * 我的商品列表
+   */
+  listMy(params) {
     return request({
-        url: `/goods/admin/${id}/reject`,
-        method: 'post',
-        data: { reason }
-      })
-    },
+      url: '/goods/my',
+      method: 'get',
+      params
+    })
+  },
 
-      /**
-       * 我的商品列表
-       */
-      listMy(params) {
-      return request({
-        url: '/goods/my',
-        method: 'get',
-        params
-      })
-    },
+  /**
+   * 管理员商品列表
+   */
+  listAdmin(params) {
+    return request({
+      url: '/goods/admin/list',
+      method: 'get',
+      params
+    })
+  },
 
-      /**
-       * 下架商品
-       */
-      offline(id) {
-      return request({
-        url: `/goods/${id}/offline`,
-        method: 'post'
-      })
-    }
+  /**
+   * 下架商品
+   */
+  offline(id) {
+    return request({
+      url: `/goods/${id}/offline`,
+      method: 'post'
+    })
+  }
 }

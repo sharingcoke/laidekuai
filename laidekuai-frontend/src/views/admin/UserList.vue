@@ -1,155 +1,124 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
+import userApi from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import adminUserApi from '@/api/adminUser'
-import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
 const loading = ref(false)
-const users = ref([])
+const userList = ref([])
 const total = ref(0)
-const page = ref(1)
-const size = ref(10)
-const statusFilter = ref('')
-
-const isAdmin = computed(() => authStore.isAdmin)
+const queryParams = reactive({
+  page: 1,
+  size: 10,
+  status: ''
+})
 
 const fetchUsers = async () => {
-  if (!isAdmin.value) return
   loading.value = true
   try {
-    const res = await adminUserApi.list({ page: page.value, size: size.value, status: statusFilter.value || undefined })
+    const res = await userApi.list(queryParams)
     if (res.code === 0) {
-      users.value = res.data.records || []
-      total.value = res.data.total || 0
+      userList.value = res.data.records
+      total.value = res.data.total
     }
   } catch (error) {
-    console.error('ªÒ»°”√ªß¡–±Ì ß∞‹', error)
+    console.error(error)
   } finally {
     loading.value = false
   }
 }
 
-const toggleStatus = async (row) => {
-  const nextStatus = row.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE'
-  try {
-    await ElMessageBox.confirm(`»∑∂®Ω´”√ªß ${row.username} ◊¥Ã¨∏ƒŒ™ ${nextStatus === 'ACTIVE' ? '∆Ù”√' : 'Ω˚”√'}?`, '»∑»œ≤Ÿ◊˜', {
-      type: 'warning'
-    })
-    const res = await adminUserApi.updateStatus(row.id, nextStatus)
-    if (res.code === 0) {
-      ElMessage.success('◊¥Ã¨∏¸–¬≥…π¶')
-      fetchUsers()
-    }
-  } catch (e) {
-    // ”√ªß»°œ˚ªÚΩ”ø⁄“Ï≥£
-  }
-}
-
-const handleSizeChange = (val) => {
-  size.value = val
-  page.value = 1
-  fetchUsers()
+const handleStatusChange = (user) => {
+    const newStatus = user.status === 'NORMAL' ? 'LOCKED' : 'NORMAL'
+    const actionText = newStatus === 'NORMAL' ? 'Ëß£Â∞Å' : 'Â∞ÅÁ¶Å'
+    
+    ElMessageBox.confirm(`Á°ÆÂÆöË¶Å${actionText}Áî®Êà∑ ${user.username} Âêó?`, 'Ë≠¶Âëä', {
+        type: 'warning'
+    }).then(async () => {
+        const res = await userApi.updateStatus(user.id, newStatus)
+        if (res.code === 0) {
+            ElMessage.success('Êìç‰ΩúÊàêÂäü')
+            user.status = newStatus
+        }
+    }).catch(() => {})
 }
 
 const handleCurrentChange = (val) => {
-  page.value = val
-  fetchUsers()
+    queryParams.page = val
+    fetchUsers()
 }
 
 onMounted(() => {
-  fetchUsers()
+    fetchUsers()
 })
 </script>
 
 <template>
-  <div class="admin-user-page">
-    <header class="page-header">
-      <div>
-        <h2>”√ªßπ‹¿Ì</h2>
-        <p>≤Èø¥≤¢π‹¿Ì∆ΩÃ®”√ªß◊¥Ã¨</p>
-      </div>
-    </header>
+  <div class="user-list-page">
+    <div class="page-header">
+      <h2>Áî®Êà∑ÁÆ°ÁêÜ</h2>
+    </div>
 
-    <section class="toolbar">
-      <el-select v-model="statusFilter" placeholder="»´≤ø◊¥Ã¨" clearable size="small" @change="fetchUsers">
-        <el-option label="ACTIVE" value="ACTIVE" />
-        <el-option label="DISABLED" value="DISABLED" />
-      </el-select>
-    </section>
+    <div class="table-container" v-loading="loading">
+       <el-table :data="userList" border style="width: 100%">
+           <el-table-column prop="id" label="ID" width="80" align="center" />
+           <el-table-column prop="username" label="Áî®Êà∑Âêç" width="150" />
+           <el-table-column prop="nickName" label="ÊòµÁß∞" width="150" />
+           <el-table-column prop="role" label="ËßíËâ≤" width="100" align="center">
+               <template #default="{ row }">
+                   <el-tag :type="row.role === 'ADMIN' ? 'danger' : 'primary'">{{ row.role }}</el-tag>
+               </template>
+           </el-table-column>
+           <el-table-column prop="phone" label="ÊâãÊú∫Âè∑" width="150" />
+           <el-table-column prop="status" label="Áä∂ÊÄÅ" width="100" align="center">
+               <template #default="{ row }">
+                   <el-tag :type="row.status === 'NORMAL' ? 'success' : 'danger'">
+                       {{ row.status === 'NORMAL' ? 'Ê≠£Â∏∏' : 'Â∞ÅÁ¶Å' }}
+                   </el-tag>
+               </template>
+           </el-table-column>
+           <el-table-column prop="createdAt" label="Ê≥®ÂÜåÊó∂Èó¥" width="180" />
+           <el-table-column label="Êìç‰Ωú" min-width="150">
+               <template #default="{ row }">
+                   <el-button 
+                     v-if="row.role !== 'ADMIN'"
+                     :type="row.status === 'NORMAL' ? 'danger' : 'success'" 
+                     size="small" 
+                     @click="handleStatusChange(row)"
+                   >
+                     {{ row.status === 'NORMAL' ? 'Â∞ÅÁ¶Å' : 'Ëß£Â∞Å' }}
+                   </el-button>
+               </template>
+           </el-table-column>
+       </el-table>
 
-    <el-table :data="users" stripe border v-loading="loading">
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="username" label="”√ªß√˚" min-width="120" />
-      <el-table-column prop="nickName" label="Í«≥∆" min-width="120" />
-      <el-table-column prop="role" label="Ω«…´" width="120">
-        <template #default="{ row }">
-          <el-tag v-if="row.role === 'ADMIN'" type="danger">ADMIN</el-tag>
-          <el-tag v-else-if="row.role === 'BUYER'" type="success">BUYER</el-tag>
-          <el-tag v-else type="info">{{ row.role }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" label="◊¥Ã¨" width="120">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'warning'">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="≤Ÿ◊˜" width="160" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" type="primary" plain @click="toggleStatus(row)">
-            {{ row.status === 'ACTIVE' ? 'Ω˚”√' : '∆Ù”√' }}
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next"
-        :total="total"
-        :current-page="page"
-        :page-size="size"
-        :page-sizes="[10, 20, 30, 50]"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+       <div class="pagination-container" v-if="total > 0">
+           <el-pagination
+                v-model:current-page="queryParams.page"
+                v-model:page-size="queryParams.size"
+                layout="prev, pager, next, total"
+                :total="total"
+                @current-change="fetchUsers"
+                background
+           />
+       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.admin-user-page {
-  padding: 24px;
+.user-list-page {
+    padding: 20px;
 }
-
 .page-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 16px;
+    margin-bottom: 20px;
 }
-
-.page-header h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
+.table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
 }
-
-.page-header p {
-  margin: 4px 0 0;
-  color: #888;
-}
-
-.toolbar {
-  margin-bottom: 12px;
-}
-
-.pagination {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
+.pagination-container {
+    margin-top: 20px;
+    text-align: right;
 }
 </style>

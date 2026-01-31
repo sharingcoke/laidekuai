@@ -107,4 +107,9 @@ public interface GoodsService {
      * @return 商品列表
      */
     Result<PageResult<Goods>> listMyGoods(Long sellerId, Long page, Long size, String status, String keyword);
+
+    /**
+     * 管理员查询商品列表
+     */
+    Result<PageResult<Goods>> listAdminGoods(Long page, Long size, String status, String keyword, Long categoryId);
 }

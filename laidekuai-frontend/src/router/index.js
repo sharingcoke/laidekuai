@@ -82,6 +82,12 @@ const routes = [
     name: 'AdminUsers',
     component: () => import('@/views/admin/UserList.vue'),
     meta: { title: '用户管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/goods',
+    name: 'AdminGoods',
+    component: () => import('@/views/admin/GoodsAudit.vue'),
+    meta: { title: '商品审核 - 管理后台', requiresAuth: true, requiresAdmin: true }
   }
 ]
 

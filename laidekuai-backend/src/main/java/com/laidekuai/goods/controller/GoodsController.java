@@ -147,4 +147,18 @@ public class GoodsController {
         Long sellerId = currentUserId();
         return goodsService.listMyGoods(sellerId, page, size, status, keyword);
     }
+
+    /**
+     * 管理员查询商品列表
+     */
+    @GetMapping("/admin/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<PageResult<Goods>> listAdminGoods(
+            @RequestParam(defaultValue = "1") Long page,
+            @RequestParam(defaultValue = "10") Long size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId) {
+        return goodsService.listAdminGoods(page, size, status, keyword, categoryId);
+    }
 }

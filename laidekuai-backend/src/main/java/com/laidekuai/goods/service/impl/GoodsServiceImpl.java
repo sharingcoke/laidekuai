@@ -422,4 +422,39 @@ public class GoodsServiceImpl implements GoodsService {
                 pageResult.getSize()
         ));
     }
+
+    @Override
+    public Result<PageResult<Goods>> listAdminGoods(Long page, Long size, String status, String keyword, Long categoryId) {
+        long pageNo = (page == null || page <= 0) ? 1 : page;
+        long pageSize = (size == null || size <= 0) ? 10 : size;
+        Page<Goods> pageParam = new Page<>(pageNo, pageSize);
+
+        LambdaQueryWrapper<Goods> wrapper = new LambdaQueryWrapper<>();
+        
+        if (StringUtils.hasText(status)) {
+             try {
+                 GoodsStatus statusEnum = GoodsStatus.valueOf(status);
+                 wrapper.eq(Goods::getStatus, statusEnum);
+             } catch (IllegalArgumentException e) {}
+        }
+
+        if (StringUtils.hasText(keyword)) {
+            wrapper.like(Goods::getTitle, keyword);
+        }
+
+        if (categoryId != null) {
+            wrapper.eq(Goods::getCategoryId, categoryId);
+        }
+
+        wrapper.orderByDesc(Goods::getCreatedAt);
+
+        Page<Goods> pageResult = goodsMapper.selectPage(pageParam, wrapper);
+
+        return Result.success(PageResult.of(
+                pageResult.getRecords(),
+                pageResult.getTotal(),
+                pageResult.getCurrent(),
+                pageResult.getSize()
+        ));
+    }
 }
