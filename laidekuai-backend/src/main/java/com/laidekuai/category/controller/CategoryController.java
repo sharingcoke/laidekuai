@@ -5,6 +5,7 @@ import com.laidekuai.category.dto.CategoryUpdateRequest;
 import com.laidekuai.category.entity.Category;
 import com.laidekuai.category.service.CategoryService;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.common.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +28,8 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    /**
-     * 获取当前用户ID
-     */
-    private Long getCurrentUserId(HttpServletRequest request) {
-        Object userIdObj = request.getAttribute("userId");
-        if (userIdObj == null) {
-            throw new IllegalArgumentException("用户未登录");
-        }
-        return Long.parseLong(userIdObj.toString());
+    private Long currentUserId() {
+        return SecurityUtils.getCurrentUserId();
     }
 
     /**
@@ -64,7 +58,7 @@ public class CategoryController {
     public Result<Category> createCategory(
             @Valid @RequestBody CategoryCreateRequest request,
             HttpServletRequest httpRequest) {
-        Long adminId = getCurrentUserId(httpRequest);
+        Long adminId = currentUserId();
         log.info("创建分类，名称: {}, 父分类ID: {}, 操作人: {}", request.getName(), request.getParentId(), adminId);
         return categoryService.createCategory(request);
     }
@@ -78,7 +72,7 @@ public class CategoryController {
             @PathVariable Long id,
             @Valid @RequestBody CategoryUpdateRequest request,
             HttpServletRequest httpRequest) {
-        Long adminId = getCurrentUserId(httpRequest);
+        Long adminId = currentUserId();
         log.info("更新分类，分类ID: {}, 操作人: {}", id, adminId);
         return categoryService.updateCategory(id, request);
     }
@@ -91,7 +85,7 @@ public class CategoryController {
     public Result<Void> deleteCategory(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        Long adminId = getCurrentUserId(httpRequest);
+        Long adminId = currentUserId();
         log.info("删除分类，分类ID: {}, 操作人: {}", id, adminId);
         return categoryService.deleteCategory(id);
     }
