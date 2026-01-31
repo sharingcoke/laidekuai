@@ -66,7 +66,9 @@ public class SecurityConfig {
                 // 公开端点
                 .requestMatchers(
                     "/auth/login",
-                    "/auth/register"
+                    "/auth/register",
+                    "/goods",
+                    "/goods/**"
                 ).permitAll()
 
                 // 其他所有请求需要认证

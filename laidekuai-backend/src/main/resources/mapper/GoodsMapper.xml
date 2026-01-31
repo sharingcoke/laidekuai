@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.goods.mapper.GoodsMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.laidekuai.goods.entity.Goods">
+        <id column="id" property="id"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="title" property="title"/>
+        <result column="sub_title" property="subTitle"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="detail" property="detail"/>
+        <result column="image_urls" property="imageUrls"/>
+        <result column="status" property="status"/>
+        <result column="audit_reason" property="auditReason"/>
+        <result column="audit_by" property="auditBy"/>
+        <result column="audit_at" property="auditAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 条件扣减库存 -->
+    <update id="deductStock">
+        UPDATE goods
+        SET stock = stock - #{quantity},
+            updated_at = NOW()
+        WHERE id = #{goodsId}
+          AND stock >= #{quantity}
+          AND status = 'APPROVED'
+          AND deleted = 0
+    </update>
+
+    <!-- 说明：
+      1. stock >= #{quantity} 条件确保库存充足时才扣减，防止超卖
+      2. 返回值影响行数：=1表示成功，=0表示库存不足或商品不存在
+      3. status = 'APPROVED' 确保只能购买已上架商品
+    -->
+
+    <!-- 释放库存 -->
+    <update id="releaseStock">
+        UPDATE goods
+        SET stock = stock + #{quantity},
+            updated_at = NOW()
+        WHERE id = #{goodsId}
+          AND deleted = 0
+    </update>
+
+</mapper>
