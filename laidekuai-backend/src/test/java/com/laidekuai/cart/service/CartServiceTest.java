@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -224,14 +225,14 @@ class CartServiceTest {
     void testRemoveFromCart_Success() {
         // Given
         when(cartMapper.selectById(1L)).thenReturn(testCart);
-        when(cartMapper.deleteById(1L)).thenReturn(1);
+        when(cartMapper.deleteById((Serializable) 1L)).thenReturn(1);
 
         // When
         var result = cartService.removeFromCart(1L, 100L);
 
         // Then
         assertTrue(result.isSuccess());
-        verify(cartMapper, times(1)).deleteById(1L);
+        verify(cartMapper, times(1)).deleteById((Serializable) 1L);
     }
 
     @Test
@@ -244,7 +245,7 @@ class CartServiceTest {
 
         // Then
         assertFalse(result.isSuccess());
-        verify(cartMapper, never()).deleteById(any());
+        verify(cartMapper, never()).deleteById(any(Serializable.class));
     }
 
     @Test
@@ -257,7 +258,7 @@ class CartServiceTest {
 
         // Then
         assertFalse(result.isSuccess());
-        verify(cartMapper, never()).deleteById(any());
+        verify(cartMapper, never()).deleteById(any(Serializable.class));
     }
 
     @Test
@@ -307,14 +308,14 @@ class CartServiceTest {
     void testClearCart_Success() {
         // Given
         when(cartMapper.selectList(any())).thenReturn(Arrays.asList(testCart));
-        when(cartMapper.deleteById(1L)).thenReturn(1);
+        when(cartMapper.deleteById((Serializable) 1L)).thenReturn(1);
 
         // When
         var result = cartService.clearCart(100L);
 
         // Then
         assertTrue(result.isSuccess());
-        verify(cartMapper, times(1)).deleteById(1L);
+        verify(cartMapper, times(1)).deleteById((Serializable) 1L);
     }
 
     @Test
@@ -327,6 +328,6 @@ class CartServiceTest {
 
         // Then
         assertTrue(result.isSuccess());
-        verify(cartMapper, never()).deleteById(any());
+        verify(cartMapper, never()).deleteById(any(Serializable.class));
     }
 }

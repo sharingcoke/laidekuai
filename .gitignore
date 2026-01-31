@@ -1,0 +1,18 @@
+# Root ignores
+.DS_Store
+.idea/
+.vscode/
+
+# Backend
+laidekuai-backend/target/
+laidekuai-backend/.project
+laidekuai-backend/.settings/
+
+# Frontend
+laidekuai-frontend/node_modules/
+laidekuai-frontend/dist/
+
+# Logs
+*.log
+
+.claude/

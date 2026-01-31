@@ -1,5 +1,6 @@
 package com.laidekuai.goods.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.goods.dto.GoodsCreateRequest;
@@ -15,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -100,7 +102,9 @@ class GoodsServiceTest {
     @Test
     void testCreateGoods_InvalidImageUrls() throws Exception {
         // Given
-        when(objectMapper.writeValueAsString(any())).thenThrow(new RuntimeException("Invalid JSON"));
+        when(objectMapper.writeValueAsString(any()))
+                .thenThrow(new JsonProcessingException("Invalid JSON") {
+                });
 
         // When
         var result = goodsService.createGoods(createRequest, 100L);
@@ -155,14 +159,14 @@ class GoodsServiceTest {
         // Given
         testGoods.setStatus(GoodsStatus.OFFLINE);
         when(goodsMapper.selectById(1L)).thenReturn(testGoods);
-        when(goodsMapper.deleteById(1L)).thenReturn(1);
+        when(goodsMapper.deleteById((Serializable) 1L)).thenReturn(1);
 
         // When
         var result = goodsService.deleteGoods(1L, 100L);
 
         // Then
         assertTrue(result.isSuccess());
-        verify(goodsMapper, times(1)).deleteById(1L);
+        verify(goodsMapper, times(1)).deleteById((Serializable) 1L);
     }
 
     @Test
@@ -176,7 +180,7 @@ class GoodsServiceTest {
 
         // Then
         assertFalse(result.isSuccess());
-        verify(goodsMapper, never()).deleteById(any());
+        verify(goodsMapper, never()).deleteById(any(Serializable.class));
     }
 
     @Test

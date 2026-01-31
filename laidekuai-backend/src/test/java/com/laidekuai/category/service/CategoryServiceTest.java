@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -227,14 +228,14 @@ class CategoryServiceTest {
         when(categoryMapper.selectById(1L)).thenReturn(testCategory);
         when(categoryMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
         when(categoryMapper.countGoodsByCategory(1L)).thenReturn(0L);
-        when(categoryMapper.deleteById(1L)).thenReturn(1);
+        when(categoryMapper.deleteById((Serializable) 1L)).thenReturn(1);
 
         // When
         var result = categoryService.deleteCategory(1L);
 
         // Then
         assertTrue(result.isSuccess());
-        verify(categoryMapper, times(1)).deleteById(1L);
+        verify(categoryMapper, times(1)).deleteById((Serializable) 1L);
     }
 
     @Test
@@ -248,7 +249,7 @@ class CategoryServiceTest {
 
         // Then
         assertFalse(result.isSuccess());
-        verify(categoryMapper, never()).deleteById(any());
+        verify(categoryMapper, never()).deleteById(any(Serializable.class));
     }
 
     @Test
@@ -263,7 +264,7 @@ class CategoryServiceTest {
 
         // Then
         assertFalse(result.isSuccess());
-        verify(categoryMapper, never()).deleteById(any());
+        verify(categoryMapper, never()).deleteById(any(Serializable.class));
     }
 
     @Test
@@ -283,8 +284,6 @@ class CategoryServiceTest {
 
         when(categoryMapper.selectById(3L)).thenReturn(category3);
         when(categoryMapper.selectById(2L)).thenReturn(category2);
-        when(categoryMapper.selectById(1L)).thenReturn(category1);
-
         // When
         boolean result = categoryService.hasCircularReference(1L, 3L);
 

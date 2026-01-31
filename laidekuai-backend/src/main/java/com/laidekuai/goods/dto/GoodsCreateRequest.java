@@ -1,10 +1,10 @@
 package com.laidekuai.goods.dto;
 
-import com.laidekuai.common.enums.GoodsStatus;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 创建商品请求
@@ -53,12 +53,7 @@ public class GoodsCreateRequest {
     private String detail;
 
     /**
-     * 商品图片URL列表（JSON数组字符串）
+     * 商品图片URL列表
      */
-    private String imageUrls;
-
-    /**
-     * 商品状态
-     */
-    private GoodsStatus status;
+    private List<String> imageUrls;
 }

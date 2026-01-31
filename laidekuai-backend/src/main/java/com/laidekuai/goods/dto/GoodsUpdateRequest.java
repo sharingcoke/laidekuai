@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 更新商品请求
@@ -49,7 +50,7 @@ public class GoodsUpdateRequest {
     private String detail;
 
     /**
-     * 商品图片URL列表（JSON数组字符串）
+     * 商品图片URL列表
      */
-    private String imageUrls;
+    private List<String> imageUrls;
 }

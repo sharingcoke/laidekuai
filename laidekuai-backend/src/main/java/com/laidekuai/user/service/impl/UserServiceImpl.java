@@ -51,7 +51,8 @@ public class UserServiceImpl implements UserService {
         // 2. 创建用户
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        user.setPasswordHash(encodedPassword);
         user.setNickName(request.getNickName());
         user.setRole(Role.BUYER);  // 默认角色为BUYER
         user.setStatus("ACTIVE");
@@ -62,8 +63,15 @@ public class UserServiceImpl implements UserService {
         log.info("用户注册成功，用户ID: {}, 用户名: {}", user.getId(), user.getUsername());
 
         // 4. 返回用户信息（不包含密码）
-        user.setPasswordHash(null);
-        return Result.success(user);
+        User response = new User();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setNickName(user.getNickName());
+        response.setRole(user.getRole());
+        response.setStatus(user.getStatus());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        return Result.success(response);
     }
 
     @Override
