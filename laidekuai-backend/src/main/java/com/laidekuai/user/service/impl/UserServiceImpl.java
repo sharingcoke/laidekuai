@@ -157,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
         // 1. 权限校验：只能修改自己的信息或管理员
         User currentUser = userMapper.selectById(currentUserId);
-        if (!currentUserId.equals(userId) && currentUser.getRole() != Role.ADMIN) {
+        if (currentUser == null || (!currentUserId.equals(userId) && currentUser.getRole() != Role.ADMIN)) {
             log.warn("无权修改用户信息，当前用户: {}, 目标用户: {}", currentUserId, userId);
             return Result.error(ErrorCode.FORBIDDEN);
         }
@@ -225,8 +225,10 @@ public class UserServiceImpl implements UserService {
     public Result<PageResult<User>> listUsers(Long page, Long size, String status) {
         log.info("查询用户列表，页码: {}, 每页大小: {}, 状态: {}", page, size, status);
 
-        // 1. 构建分页参数
-        Page<User> pageParam = new Page<>(page, size);
+        // 1. 构建分页参数（限制 size 1-50）
+        long pageSize = (size == null || size <= 0) ? 10 : Math.min(size, 50);
+        long pageNo = (page == null || page <= 0) ? 1 : page;
+        Page<User> pageParam = new Page<>(pageNo, pageSize);
 
         // 2. 构建查询条件
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
@@ -261,6 +263,10 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectById(userId);
         if (user == null) {
             return Result.error(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!"ACTIVE".equals(status) && !"DISABLED".equals(status)) {
+            return Result.error(ErrorCode.VALIDATION_FAILED);
         }
 
         // 2. 更新状态

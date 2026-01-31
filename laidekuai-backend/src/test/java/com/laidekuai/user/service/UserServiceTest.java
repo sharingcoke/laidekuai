@@ -2,8 +2,10 @@ package com.laidekuai.user.service;
 
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.LoginRequest;
+import com.laidekuai.common.dto.PasswordChangeRequest;
 import com.laidekuai.common.dto.RegisterRequest;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.common.dto.UserUpdateRequest;
 import com.laidekuai.common.enums.Role;
 import com.laidekuai.common.util.JwtUtil;
 import com.laidekuai.user.entity.User;
@@ -247,5 +249,140 @@ class UserServiceTest {
 
         // Then: 验证结果
         assertThat(result.getCode()).isEqualTo(ErrorCode.USER_NOT_FOUND.getCode());
+    }
+
+    @Test
+    @DisplayName("更新用户信息：本人可更新")
+    void updateUserInfo_Self_Success() {
+        User current = buildUser(1L, Role.BUYER, "ACTIVE");
+        UserUpdateRequest updateRequest = new UserUpdateRequest();
+        updateRequest.setNickName("新昵称");
+        updateRequest.setPhone("13800138000");
+
+        when(userMapper.selectById(1L)).thenReturn(current).thenReturn(current);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+
+        var result = userService.updateUserInfo(1L, updateRequest, 1L);
+
+        assertThat(result.getCode()).isEqualTo(0);
+        assertThat(result.getData().getNickName()).isEqualTo("新昵称");
+        verify(userMapper, times(1)).updateById(any(User.class));
+    }
+
+    @Test
+    @DisplayName("更新用户信息：管理员可更新他人")
+    void updateUserInfo_Admin_Success() {
+        User admin = buildUser(99L, Role.ADMIN, "ACTIVE");
+        User target = buildUser(1L, Role.BUYER, "ACTIVE");
+        UserUpdateRequest updateRequest = new UserUpdateRequest();
+        updateRequest.setAvatarUrl("http://a.com/avatar.png");
+
+        when(userMapper.selectById(99L)).thenReturn(admin);
+        when(userMapper.selectById(1L)).thenReturn(target);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+
+        var result = userService.updateUserInfo(1L, updateRequest, 99L);
+
+        assertThat(result.getCode()).isEqualTo(0);
+        assertThat(result.getData().getAvatarUrl()).isEqualTo("http://a.com/avatar.png");
+    }
+
+    @Test
+    @DisplayName("更新用户信息：非本人非管理员被拒绝")
+    void updateUserInfo_Forbidden() {
+        User current = buildUser(2L, Role.BUYER, "ACTIVE");
+        User target = buildUser(1L, Role.BUYER, "ACTIVE");
+        when(userMapper.selectById(2L)).thenReturn(current);
+        when(userMapper.selectById(1L)).thenReturn(target);
+
+        var result = userService.updateUserInfo(1L, new UserUpdateRequest(), 2L);
+
+        assertThat(result.getCode()).isEqualTo(ErrorCode.FORBIDDEN.getCode());
+    }
+
+    @Test
+    @DisplayName("修改密码：旧密码错误返回40103")
+    void changePassword_OldPasswordWrong() {
+        User user = buildUser(1L, Role.BUYER, "ACTIVE");
+        user.setPasswordHash(passwordEncoder.encode("old123456"));
+        when(userMapper.selectById(1L)).thenReturn(user);
+
+        PasswordChangeRequest req = new PasswordChangeRequest();
+        req.setOldPassword("wrong");
+        req.setNewPassword("new123456");
+
+        var result = userService.changePassword(1L, req, 1L);
+
+        assertThat(result.getCode()).isEqualTo(ErrorCode.PASSWORD_ERROR.getCode());
+    }
+
+    @Test
+    @DisplayName("修改密码：本人成功修改")
+    void changePassword_Success() {
+        User user = buildUser(1L, Role.BUYER, "ACTIVE");
+        user.setPasswordHash(passwordEncoder.encode("old123456"));
+        when(userMapper.selectById(1L)).thenReturn(user);
+
+        PasswordChangeRequest req = new PasswordChangeRequest();
+        req.setOldPassword("old123456");
+        req.setNewPassword("new123456");
+
+        var result = userService.changePassword(1L, req, 1L);
+
+        assertThat(result.getCode()).isEqualTo(0);
+        verify(userMapper, times(1)).updateById(any(User.class));
+    }
+
+    @Test
+    @DisplayName("管理员分页查询用户，返回密码已脱敏")
+    void listUsers_Success() {
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<User> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, 10);
+        User u1 = buildUser(1L, Role.BUYER, "ACTIVE");
+        u1.setPasswordHash("hash");
+        page.setRecords(java.util.List.of(u1));
+        page.setTotal(1);
+
+        when(userMapper.selectPage(any(), any())).thenReturn(page);
+
+        var result = userService.listUsers(1L, 20L, "ACTIVE");
+
+        assertThat(result.getCode()).isEqualTo(0);
+        assertThat(result.getData().getRecords()).hasSize(1);
+        assertThat(result.getData().getRecords().get(0).getPasswordHash()).isNull();
+    }
+
+    @Test
+    @DisplayName("管理员更新状态：非法状态返回校验错误")
+    void updateUserStatus_InvalidStatus() {
+        User user = buildUser(1L, Role.BUYER, "ACTIVE");
+        when(userMapper.selectById(1L)).thenReturn(user);
+
+        var result = userService.updateUserStatus(1L, "UNKNOWN");
+
+        assertThat(result.getCode()).isEqualTo(ErrorCode.VALIDATION_FAILED.getCode());
+    }
+
+    @Test
+    @DisplayName("管理员更新状态：成功")
+    void updateUserStatus_Success() {
+        User user = buildUser(1L, Role.BUYER, "ACTIVE");
+        when(userMapper.selectById(1L)).thenReturn(user);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+
+        var result = userService.updateUserStatus(1L, "DISABLED");
+
+        assertThat(result.getCode()).isEqualTo(0);
+        verify(userMapper, times(1)).updateById(any(User.class));
+    }
+
+    private User buildUser(Long id, Role role, String status) {
+        User u = new User();
+        u.setId(id);
+        u.setUsername("u" + id);
+        u.setPasswordHash(passwordEncoder.encode("pwd123"));
+        u.setRole(role);
+        u.setStatus(status);
+        u.setNickName("nick");
+        return u;
     }
 }

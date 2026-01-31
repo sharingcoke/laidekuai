@@ -14,7 +14,7 @@ public class UserUpdateRequest {
     /**
      * 昵称
      */
-    @Size(max = 50, message = "昵称长度不能超过50个字符")
+    @Size(max = 32, message = "昵称长度不能超过32个字符")
     private String nickName;
 
     /**
