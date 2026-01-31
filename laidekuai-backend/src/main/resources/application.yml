@@ -1,0 +1,80 @@
+# 来得快二手交易平台 - 主配置文件
+server:
+  port: 9090
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: laidekuai
+
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/laidekuai?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  # Flyway配置
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    encoding: UTF-8
+    validate-on-migrate: true
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 100MB
+
+  # Jackson配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_null
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.laidekuai.*.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.laidekuai: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+# 应用配置
+app:
+  # JWT配置
+  jwt:
+    secret: laidekuai-secret-key-20260131-do-not-change-in-production
+    expiration: 604800000  # 7天（毫秒）
+    header: Authorization
+    prefix: "Bearer "
+
+  # 文件上传配置
+  upload:
+    path: uploads/
+    allowed-types: jpg,jpeg,png,webp
+    max-size: 20971520  # 20MB（字节）
+
+  # 订单配置
+  order:
+    timeout-minutes: 15  # 订单超时时间（分钟）
+    max-active-orders: 10  # 最大活跃订单数
