@@ -52,6 +52,12 @@ const routes = [
     name: 'Profile',
     component: () => import('@/views/user/Profile.vue'),
     meta: { title: '个人中心 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: () => import('@/views/admin/UserList.vue'),
+    meta: { title: '用户管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   }
 ]
 
@@ -79,6 +85,9 @@ router.beforeEach((to, from, next) => {
       name: 'Login',
       query: { redirect: to.fullPath }
     })
+  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    // 非管理员访问管理页，回首页
+    next({ path: '/' })
   } else {
     next()
   }
