@@ -131,6 +131,7 @@ class UserServiceTest {
 
         when(userMapper.selectOne(any())).thenReturn(user);
         when(jwtUtil.generateToken(1L, "testuser", "BUYER")).thenReturn("mock-jwt-token");
+        when(jwtUtil.getExpiration()).thenReturn(604800000L);
 
         // When: 执行登录
         Result<?> result = userService.login(request);
@@ -140,7 +141,9 @@ class UserServiceTest {
         assertThat(result.getData()).isNotNull();
 
         UserService.LoginResult loginResult = (UserService.LoginResult) result.getData();
-        assertThat(loginResult.getToken()).isEqualTo("mock-jwt-token");
+        assertThat(loginResult.getAccessToken()).isEqualTo("mock-jwt-token");
+        assertThat(loginResult.getTokenType()).isEqualTo("Bearer");
+        assertThat(loginResult.getExpiresIn()).isEqualTo(604800000L);
         assertThat(loginResult.getUser().getUsername()).isEqualTo("testuser");
         assertThat(loginResult.getUser().getPasswordHash()).isNull(); // 密码已清除
     }

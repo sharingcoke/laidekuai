@@ -14,6 +14,7 @@ public enum ErrorCode {
 
     // ========== 通用错误码 ==========
     SUCCESS(0, "ok"),
+    VALIDATION_FAILED(40001, "参数校验失败"),
     BAD_REQUEST(400, "请求参数错误"),
     UNAUTHORIZED(401, "未授权，请先登录"),
     FORBIDDEN(403, "无权限访问"),

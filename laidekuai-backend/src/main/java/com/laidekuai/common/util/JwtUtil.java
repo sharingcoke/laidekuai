@@ -1,7 +1,9 @@
 package com.laidekuai.common.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,10 @@ public class JwtUtil {
      */
     @Value("${app.jwt.expiration}")
     private Long expiration;
+
+    public Long getExpiration() {
+        return expiration;
+    }
 
     /**
      * 生成密钥
@@ -114,6 +120,13 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    /**
+     * 解析Claims（暴露给过滤器区分异常）
+     */
+    public Claims parseClaims(String token) throws JwtException {
+        return getAllClaimsFromToken(token);
     }
 
     /**

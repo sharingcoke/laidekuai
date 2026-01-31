@@ -27,6 +27,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     /**
      * 密码编码器
@@ -78,7 +79,9 @@ public class SecurityConfig {
             )
 
             // 添加JWT过滤器
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // 未认证时返回统一JSON
+            .exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint));
 
         return http.build();
     }

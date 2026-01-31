@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(request.getUsername());
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         user.setPasswordHash(encodedPassword);
-        user.setNickName(request.getNickName());
+        user.setNickName(StringUtils.hasText(request.getNickName()) ? request.getNickName() : request.getUsername());
         user.setRole(Role.BUYER);  // 默认角色为BUYER
         user.setStatus("ACTIVE");
 
@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
         response.setNickName(user.getNickName());
         response.setRole(user.getRole());
         response.setStatus(user.getStatus());
+        response.setAvatarUrl(user.getAvatarUrl());
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         return Result.success(response);
@@ -105,7 +106,7 @@ public class UserServiceImpl implements UserService {
         // 5. 清除密码哈希后返回
         user.setPasswordHash(null);
 
-        return Result.success(new LoginResult(token, user));
+        return Result.success(new LoginResult(token, "Bearer", jwtUtil.getExpiration(), user));
     }
 
     @Override

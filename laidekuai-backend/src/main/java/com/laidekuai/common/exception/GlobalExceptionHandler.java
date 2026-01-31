@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         log.warn("参数校验失败: {}", message);
-        return Result.error(ErrorCode.BAD_REQUEST.getCode(), message);
+        return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), message);
     }
 
     /**
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining(", "));
         log.warn("参数校验失败: {}", message);
-        return Result.error(ErrorCode.BAD_REQUEST.getCode(), message);
+        return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), message);
     }
 
     /**
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         log.warn("参数绑定失败: {}", message);
-        return Result.error(ErrorCode.BAD_REQUEST.getCode(), message);
+        return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), message);
     }
 
     /**
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("非法参数: {}", e.getMessage());
-        return Result.error(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), e.getMessage());
     }
 
     /**

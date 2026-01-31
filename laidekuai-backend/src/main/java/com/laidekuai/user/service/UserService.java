@@ -100,16 +100,28 @@ public interface UserService {
      * 登录结果
      */
     class LoginResult {
-        private String token;
-        private User user;
+        private final String accessToken;
+        private final String tokenType;
+        private final Long expiresIn;
+        private final User user;
 
-        public LoginResult(String token, User user) {
-            this.token = token;
+        public LoginResult(String accessToken, String tokenType, Long expiresIn, User user) {
+            this.accessToken = accessToken;
+            this.tokenType = tokenType;
+            this.expiresIn = expiresIn;
             this.user = user;
         }
 
-        public String getToken() {
-            return token;
+        public String getAccessToken() {
+            return accessToken;
+        }
+
+        public String getTokenType() {
+            return tokenType;
+        }
+
+        public Long getExpiresIn() {
+            return expiresIn;
         }
 
         public User getUser() {

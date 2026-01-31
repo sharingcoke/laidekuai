@@ -1,6 +1,9 @@
 package com.laidekuai.common.config;
 
+import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,14 +43,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 从请求头获取token
         String token = extractToken(request);
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            // token有效，设置认证信息
+        if (token != null) {
             try {
-                String username = jwtUtil.getUsernameFromToken(token);
-                String role = jwtUtil.getRoleFromToken(token);
-                Long userId = jwtUtil.getUserIdFromToken(token);
+                var claims = jwtUtil.parseClaims(token);
+                if (claims.getExpiration().before(new java.util.Date())) {
+                    writeError(response, ErrorCode.TOKEN_EXPIRED);
+                    return;
+                }
 
-                // 创建认证主体
+                String role = claims.get("role", String.class);
+                Long userId = claims.get("userId", Long.class);
+
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                         userId,
@@ -55,14 +61,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
                     );
 
-                // 设置详细信息
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // 设置到SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                log.debug("JWT认证成功，用户: {}, 角色: {}", username, role);
-
+                log.debug("JWT认证成功，用户ID: {}, 角色: {}", userId, role);
+            } catch (ExpiredJwtException e) {
+                writeError(response, ErrorCode.TOKEN_EXPIRED);
+                return;
+            } catch (JwtException e) {
+                writeError(response, ErrorCode.TOKEN_INVALID);
+                return;
             } catch (Exception e) {
                 log.error("JWT解析失败", e);
                 SecurityContextHolder.clearContext();
@@ -70,6 +78,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void writeError(HttpServletResponse response, ErrorCode code) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        String body = String.format(
+                "{\"code\":%d,\"message\":\"%s\",\"data\":null,\"timestamp\":%d}",
+                code.getCode(), code.getMessage(), System.currentTimeMillis());
+        response.getWriter().write(body);
+        response.getWriter().flush();
     }
 
     /**
