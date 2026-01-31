@@ -68,7 +68,9 @@ public class SecurityConfig {
                     "/auth/login",
                     "/auth/register",
                     "/goods",
-                    "/goods/**"
+                    "/goods/**",
+                    "/categories",
+                    "/categories/**"
                 ).permitAll()
 
                 // 其他所有请求需要认证

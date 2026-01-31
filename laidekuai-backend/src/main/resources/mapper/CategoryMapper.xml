@@ -8,11 +8,20 @@
         <result column="name" property="name"/>
         <result column="parent_id" property="parentId"/>
         <result column="level" property="level"/>
-        <result column="sort" property="sort"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="icon_url" property="iconUrl"/>
         <result column="status" property="status"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
         <result column="deleted" property="deleted"/>
     </resultMap>
+
+    <!-- 统计分类下的商品数量 -->
+    <select id="countGoodsByCategory" resultType="long">
+        SELECT COUNT(*)
+        FROM goods
+        WHERE category_id = #{categoryId}
+          AND deleted = 0
+    </select>
 
 </mapper>
