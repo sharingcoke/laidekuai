@@ -6,6 +6,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const loading = ref(false)
 const userList = ref([])
 const total = ref(0)
+const activeTab = ref('all')
 const queryParams = reactive({
   page: 1,
   size: 10,
@@ -15,7 +16,12 @@ const queryParams = reactive({
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const res = await userApi.list(queryParams)
+    const params = {
+      page: queryParams.page,
+      size: queryParams.size,
+      status: queryParams.status || undefined
+    }
+    const res = await userApi.list(params)
     if (res.code === 0) {
       userList.value = res.data.records
       total.value = res.data.total
@@ -27,24 +33,50 @@ const fetchUsers = async () => {
   }
 }
 
-const handleStatusChange = (user) => {
-    const newStatus = user.status === 'NORMAL' ? 'LOCKED' : 'NORMAL'
-    const actionText = newStatus === 'NORMAL' ? '解封' : '封禁'
-    
-    ElMessageBox.confirm(`确定要${actionText}用户 ${user.username} 吗?`, '警告', {
-        type: 'warning'
-    }).then(async () => {
-        const res = await userApi.updateStatus(user.id, newStatus)
-        if (res.code === 0) {
-            ElMessage.success('操作成功')
-            user.status = newStatus
-        }
-    }).catch(() => {})
+const handleTabClick = (tab) => {
+  queryParams.status = tab.props.name === 'all' ? '' : tab.props.name
+  queryParams.page = 1
+  fetchUsers()
+}
+
+const handleDisable = (user) => {
+  ElMessageBox.confirm(`确定禁用用户 ${user.username} 吗?`, '警告', {
+    type: 'warning'
+  }).then(async () => {
+    const res = await userApi.disable(user.id)
+    if (res.code === 0) {
+      ElMessage.success('用户已禁用')
+      fetchUsers()
+    }
+  }).catch(() => {})
+}
+
+const handleEnable = (user) => {
+  ElMessageBox.confirm(`确定启用用户 ${user.username} 吗?`, '提示', {
+    type: 'warning'
+  }).then(async () => {
+    const res = await userApi.enable(user.id)
+    if (res.code === 0) {
+      ElMessage.success('用户已启用')
+      fetchUsers()
+    }
+  }).catch(() => {})
+}
+
+const handleResetPassword = (user) => {
+  ElMessageBox.confirm(`确定重置用户 ${user.username} 的密码吗？`, '提示', {
+    type: 'warning'
+  }).then(async () => {
+    const res = await userApi.resetPassword(user.id)
+    if (res.code === 0) {
+      ElMessage.success('密码已重置为默认值')
+    }
+  }).catch(() => {})
 }
 
 const handleCurrentChange = (val) => {
-    queryParams.page = val
-    fetchUsers()
+  queryParams.page = val
+  fetchUsers()
 }
 
 onMounted(() => {
@@ -61,6 +93,12 @@ onMounted(() => {
       </div>
     </div>
 
+    <el-tabs v-model="activeTab" class="tabs-panel" @tab-click="handleTabClick">
+      <el-tab-pane label="全部" name="all" />
+      <el-tab-pane label="正常" name="ACTIVE" />
+      <el-tab-pane label="禁用" name="DISABLED" />
+    </el-tabs>
+
     <div class="table-container panel-card table-panel" v-loading="loading">
        <el-table :data="userList" border style="width: 100%">
            <el-table-column prop="id" label="ID" width="80" align="center" />
@@ -74,21 +112,36 @@ onMounted(() => {
            <el-table-column prop="phone" label="手机号" width="150" />
            <el-table-column prop="status" label="状态" width="100" align="center">
                <template #default="{ row }">
-                   <el-tag :type="row.status === 'NORMAL' ? 'success' : 'danger'">
-                       {{ row.status === 'NORMAL' ? '正常' : '封禁' }}
+                   <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">
+                       {{ row.status === 'ACTIVE' ? '正常' : '禁用' }}
                    </el-tag>
                </template>
            </el-table-column>
            <el-table-column prop="createdAt" label="注册时间" width="180" />
            <el-table-column label="操作" min-width="150">
                <template #default="{ row }">
-                   <el-button 
-                     v-if="row.role !== 'ADMIN'"
-                     :type="row.status === 'NORMAL' ? 'danger' : 'success'" 
-                     size="small" 
-                     @click="handleStatusChange(row)"
+                   <el-button
+                     v-if="row.role !== 'ADMIN' && row.status === 'ACTIVE'"
+                     type="danger"
+                     size="small"
+                     @click="handleDisable(row)"
                    >
-                     {{ row.status === 'NORMAL' ? '封禁' : '解封' }}
+                     禁用
+                   </el-button>
+                   <el-button
+                     v-if="row.role !== 'ADMIN' && row.status === 'DISABLED'"
+                     type="success"
+                     size="small"
+                     @click="handleEnable(row)"
+                   >
+                     启用
+                   </el-button>
+                   <el-button
+                     v-if="row.role !== 'ADMIN'"
+                     size="small"
+                     @click="handleResetPassword(row)"
+                   >
+                     重置密码
                    </el-button>
                </template>
            </el-table-column>
@@ -112,6 +165,12 @@ onMounted(() => {
 .table-container {
     padding-top: 12px;
     padding-bottom: 12px;
+}
+.tabs-panel {
+    margin-bottom: 16px;
+    background: white;
+    padding: 6px 16px;
+    border-radius: 8px;
 }
 .pagination-container {
     margin-top: 16px;

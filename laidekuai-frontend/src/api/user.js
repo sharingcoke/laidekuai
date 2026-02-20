@@ -46,5 +46,35 @@ export default {
             method: 'put',
             params: { status }
         })
+    },
+
+    /**
+     * 管理员：禁用用户
+     */
+    disable(id) {
+        return request({
+            url: `/admin/users/${id}/disable`,
+            method: 'post'
+        })
+    },
+
+    /**
+     * 管理员：启用用户
+     */
+    enable(id) {
+        return request({
+            url: `/admin/users/${id}/enable`,
+            method: 'post'
+        })
+    },
+
+    /**
+     * 管理员：重置密码
+     */
+    resetPassword(id) {
+        return request({
+            url: `/admin/users/${id}/reset-password`,
+            method: 'post'
+        })
     }
 }

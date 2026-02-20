@@ -91,4 +91,37 @@ public class UserController {
         log.info("管理员更新用户状态，用户ID: {}, 状态: {}", id, status);
         return userService.updateUserStatus(id, status);
     }
+
+    /**
+     * 管理员禁用用户
+     */
+    @PostMapping("/admin/users/{id}/disable")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> disableUser(@PathVariable Long id) {
+        Long adminId = SecurityUtils.getCurrentUserId();
+        log.info("管理员禁用用户，用户ID: {}, 操作人: {}", id, adminId);
+        return userService.disableUser(id, adminId);
+    }
+
+    /**
+     * 管理员启用用户
+     */
+    @PostMapping("/admin/users/{id}/enable")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> enableUser(@PathVariable Long id) {
+        Long adminId = SecurityUtils.getCurrentUserId();
+        log.info("管理员启用用户，用户ID: {}, 操作人: {}", id, adminId);
+        return userService.enableUser(id, adminId);
+    }
+
+    /**
+     * 管理员重置密码
+     */
+    @PostMapping("/admin/users/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> resetPassword(@PathVariable Long id) {
+        Long adminId = SecurityUtils.getCurrentUserId();
+        log.info("管理员重置密码，用户ID: {}, 操作人: {}", id, adminId);
+        return userService.resetPassword(id, adminId);
+    }
 }

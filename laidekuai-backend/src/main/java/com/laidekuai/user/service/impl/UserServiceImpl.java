@@ -12,15 +12,24 @@ import com.laidekuai.common.dto.UserUpdateRequest;
 import com.laidekuai.common.enums.Role;
 import com.laidekuai.common.exception.BusinessException;
 import com.laidekuai.common.util.JwtUtil;
+import com.laidekuai.goods.mapper.GoodsMapper;
+import com.laidekuai.order.entity.Order;
+import com.laidekuai.order.entity.OrderItem;
+import com.laidekuai.order.mapper.OrderItemMapper;
+import com.laidekuai.order.mapper.OrderMapper;
 import com.laidekuai.user.entity.User;
 import com.laidekuai.user.mapper.UserMapper;
 import com.laidekuai.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用户服务实现
@@ -34,7 +43,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
+    private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
+    private final GoodsMapper goodsMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Value("${admin.reset.default-password:123456}")
+    private String defaultPassword;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -259,22 +274,117 @@ public class UserServiceImpl implements UserService {
     public Result<Void> updateUserStatus(Long userId, String status) {
         log.info("更新用户状态，用户ID: {}, 状态: {}", userId, status);
 
-        // 1. 查询用户
-        User user = userMapper.selectById(userId);
-        if (user == null) {
-            return Result.error(ErrorCode.USER_NOT_FOUND);
-        }
-
         if (!"ACTIVE".equals(status) && !"DISABLED".equals(status)) {
             return Result.error(ErrorCode.VALIDATION_FAILED);
         }
 
-        // 2. 更新状态
-        user.setStatus(status);
+        if ("DISABLED".equals(status)) {
+            return disableUser(userId, null);
+        }
+        return enableUser(userId, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> disableUser(Long userId, Long adminId) {
+        log.info("禁用用户，用户ID: {}, 操作人: {}", userId, adminId);
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.error(ErrorCode.USER_NOT_FOUND);
+        }
+        if ("DISABLED".equals(user.getStatus())) {
+            return Result.success();
+        }
+
+        // 禁用前检查卖家订单状态
+        LambdaQueryWrapper<Order> blockWrapper = new LambdaQueryWrapper<>();
+        blockWrapper.eq(Order::getSellerId, userId)
+                .in(Order::getStatus, "SHIPPED", "COMPLETED");
+        if (orderMapper.selectCount(blockWrapper) > 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        LambdaQueryWrapper<Order> disputeWrapper = new LambdaQueryWrapper<>();
+        disputeWrapper.eq(Order::getSellerId, userId)
+                .in(Order::getStatus, "REFUNDING", "DISPUTED");
+        if (orderMapper.selectCount(disputeWrapper) > 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        // 处理已支付未发货订单：退款释放库存
+        LambdaQueryWrapper<Order> paidWrapper = new LambdaQueryWrapper<>();
+        paidWrapper.eq(Order::getSellerId, userId)
+                .eq(Order::getStatus, "PAID");
+        List<Order> paidOrders = orderMapper.selectList(paidWrapper);
+        for (Order order : paidOrders) {
+            List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
+            for (OrderItem item : items) {
+                goodsMapper.releaseStock(item.getGoodsId(), item.getQuantity());
+            }
+            order.setStatus("REFUNDED");
+            order.setCancelReason("ADMIN");
+            order.setCancelTime(LocalDateTime.now());
+            order.setUpdatedAt(LocalDateTime.now());
+            orderMapper.updateById(order);
+            orderItemMapper.updateStatusByOrderId(order.getId(), "REFUNDED");
+        }
+
+        // 处理未支付订单：取消释放库存
+        LambdaQueryWrapper<Order> pendingWrapper = new LambdaQueryWrapper<>();
+        pendingWrapper.eq(Order::getSellerId, userId)
+                .eq(Order::getStatus, "PENDING_PAY");
+        List<Order> pendingOrders = orderMapper.selectList(pendingWrapper);
+        for (Order order : pendingOrders) {
+            List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
+            for (OrderItem item : items) {
+                goodsMapper.releaseStock(item.getGoodsId(), item.getQuantity());
+            }
+            order.setStatus("CANCELED");
+            order.setCancelReason("ADMIN");
+            order.setCancelTime(LocalDateTime.now());
+            order.setUpdatedAt(LocalDateTime.now());
+            orderMapper.updateById(order);
+            orderItemMapper.updateStatusByOrderId(order.getId(), "CANCELED");
+        }
+
+        user.setStatus("DISABLED");
+        user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
 
-        log.info("用户状态更新成功，用户ID: {}, 状态: {}", userId, status);
+        return Result.success();
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> enableUser(Long userId, Long adminId) {
+        log.info("启用用户，用户ID: {}, 操作人: {}", userId, adminId);
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.error(ErrorCode.USER_NOT_FOUND);
+        }
+        if ("ACTIVE".equals(user.getStatus())) {
+            return Result.success();
+        }
+        user.setStatus("ACTIVE");
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> resetPassword(Long userId, Long adminId) {
+        log.info("重置用户密码，用户ID: {}, 操作人: {}", userId, adminId);
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.error(ErrorCode.USER_NOT_FOUND);
+        }
+        user.setPasswordHash(passwordEncoder.encode(defaultPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
         return Result.success();
     }
 }

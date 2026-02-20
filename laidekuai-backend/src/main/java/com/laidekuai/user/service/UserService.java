@@ -97,6 +97,33 @@ public interface UserService {
     Result<Void> updateUserStatus(Long userId, String status);
 
     /**
+     * 禁用用户（管理员）
+     *
+     * @param userId 用户ID
+     * @param adminId 管理员ID
+     * @return 结果
+     */
+    Result<Void> disableUser(Long userId, Long adminId);
+
+    /**
+     * 启用用户（管理员）
+     *
+     * @param userId 用户ID
+     * @param adminId 管理员ID
+     * @return 结果
+     */
+    Result<Void> enableUser(Long userId, Long adminId);
+
+    /**
+     * 重置用户密码（管理员）
+     *
+     * @param userId 用户ID
+     * @param adminId 管理员ID
+     * @return 结果
+     */
+    Result<Void> resetPassword(Long userId, Long adminId);
+
+    /**
      * 登录结果
      */
     class LoginResult {

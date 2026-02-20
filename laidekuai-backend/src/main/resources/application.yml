@@ -79,3 +79,8 @@ app:
   order:
     timeout-minutes: 15  # 订单超时时间（分钟）
     max-active-orders: 10  # 最大活跃订单数
+
+# 管理员配置
+admin:
+  reset:
+    default-password: 123456
