@@ -88,6 +88,12 @@ const routes = [
     name: 'AdminGoods',
     component: () => import('@/views/admin/GoodsAudit.vue'),
     meta: { title: '商品审核 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/seller/orders',
+    name: 'SellerOrders',
+    component: () => import('@/views/seller/SalesOrders.vue'),
+    meta: { title: '卖家订单 - 来得快', requiresAuth: true, requiresSeller: true }
   }
 ]
 
@@ -117,6 +123,9 @@ router.beforeEach((to, from, next) => {
     })
   } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
     // 非管理员访问管理页，回首页
+    next({ path: '/' })
+  } else if (to.meta.requiresSeller && !authStore.isSeller && !authStore.isAdmin) {
+    // 非卖家访问卖家页，回首页
     next({ path: '/' })
   } else {
     next()

@@ -71,6 +71,17 @@ export default {
     },
 
     /**
+     * 卖家订单列表
+     */
+    listSeller(params) {
+        return request({
+            url: '/orders/seller',
+            method: 'get',
+            params
+        })
+    },
+
+    /**
      * 订单详情
      */
     detail(id) {
@@ -81,14 +92,32 @@ export default {
     },
 
     /**
-     * 卖家发货
+     * 卖家发货（订单项级）
      */
-    ship(id, data) {
+    shipItem(id, data) {
         return request({
-            url: `/orders/${id}/ship`,
+            url: `/seller/order-items/${id}/ship`,
             method: 'post',
             data
         })
+    },
+
+    /**
+     * 管理员代发货（订单项级）
+     */
+    shipItemByAdmin(id, data) {
+        return request({
+            url: `/admin/order-items/${id}/ship`,
+            method: 'post',
+            data
+        })
+    },
+
+    /**
+     * 兼容旧调用：发货
+     */
+    ship(id, data) {
+        return this.shipItem(id, data)
     },
 
     /**
