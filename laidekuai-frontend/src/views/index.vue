@@ -34,6 +34,9 @@ const authStore = useAuthStore()
                 <el-dropdown-item>
                   <RouterLink to="/admin/users">用户管理</RouterLink>
                 </el-dropdown-item>
+                <el-dropdown-item>
+                  <RouterLink to="/admin/refunds">退款审核</RouterLink>
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>

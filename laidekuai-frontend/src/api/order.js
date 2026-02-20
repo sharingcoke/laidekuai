@@ -140,5 +140,25 @@ export default {
             method: 'post',
             data: { approved, remark }
         })
+    },
+
+    /**
+     * 管理员退款通过
+     */
+    approveRefundByAdmin(id) {
+        return request({
+            url: `/admin/orders/${id}/refund/approve`,
+            method: 'post'
+        })
+    },
+
+    /**
+     * 管理员退款驳回
+     */
+    rejectRefundByAdmin(id) {
+        return request({
+            url: `/admin/orders/${id}/refund/reject`,
+            method: 'post'
+        })
     }
 }

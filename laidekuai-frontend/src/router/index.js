@@ -96,6 +96,12 @@ const routes = [
     meta: { title: '订单管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/refunds',
+    name: 'AdminRefunds',
+    component: () => import('@/views/admin/RefundAudit.vue'),
+    meta: { title: '退款审核 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/seller/orders',
     name: 'SellerOrders',
     component: () => import('@/views/seller/SalesOrders.vue'),

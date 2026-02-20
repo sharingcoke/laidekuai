@@ -156,6 +156,24 @@ public interface OrderService {
      * @return 处理结果
      */
     Result<Void> handleRefund(Long orderId, Long userId, boolean approved, String remark);
+
+    /**
+     * 管理员退款通过
+     *
+     * @param orderId 订单ID
+     * @param adminId 当前用户ID（管理员）
+     * @return 处理结果
+     */
+    Result<Void> approveRefundByAdmin(Long orderId, Long adminId);
+
+    /**
+     * 管理员退款驳回
+     *
+     * @param orderId 订单ID
+     * @param adminId 当前用户ID（管理员）
+     * @return 处理结果
+     */
+    Result<Void> rejectRefundByAdmin(Long orderId, Long adminId);
     /**
      * 系统自动取消超时订单
      *

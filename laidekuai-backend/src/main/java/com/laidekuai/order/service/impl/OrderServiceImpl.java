@@ -1,6 +1,7 @@
 package com.laidekuai.order.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.address.entity.Address;
 import com.laidekuai.address.mapper.AddressMapper;
@@ -580,6 +581,69 @@ public class OrderServiceImpl implements OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.updateById(order);
 
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> approveRefundByAdmin(Long orderId, Long adminId) {
+        log.info("管理员 {} 审核通过退款，订单 {}", adminId, orderId);
+
+        Order order = orderMapper.selectById(orderId);
+        if (order == null || order.getDeleted() == 1) {
+            return Result.error(ErrorCode.ORDER_NOT_FOUND);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LambdaUpdateWrapper<Order> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Order::getId, orderId)
+                .eq(Order::getDeleted, 0)
+                .eq(Order::getStatus, "REFUNDING")
+                .set(Order::getStatus, "REFUNDED")
+                .set(Order::getCancelReason, "BUYER_REFUND")
+                .set(Order::getCancelTime, now)
+                .set(Order::getUpdatedAt, now);
+
+        int updated = orderMapper.update(null, wrapper);
+        if (updated == 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
+        for (OrderItem item : items) {
+            goodsMapper.releaseStock(item.getGoodsId(), item.getQuantity());
+            log.debug("释放商品 {} 库存: {}", item.getGoodsId(), item.getQuantity());
+        }
+        orderItemMapper.updateStatusByOrderId(orderId, "REFUNDED");
+
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> rejectRefundByAdmin(Long orderId, Long adminId) {
+        log.info("管理员 {} 驳回退款，订单 {}", adminId, orderId);
+
+        Order order = orderMapper.selectById(orderId);
+        if (order == null || order.getDeleted() == 1) {
+            return Result.error(ErrorCode.ORDER_NOT_FOUND);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LambdaUpdateWrapper<Order> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Order::getId, orderId)
+                .eq(Order::getDeleted, 0)
+                .eq(Order::getStatus, "REFUNDING")
+                .set(Order::getStatus, "PAID")
+                .set(Order::getUpdatedAt, now)
+                .setSql("refund_request_count = refund_request_count + 1");
+
+        int updated = orderMapper.update(null, wrapper);
+        if (updated == 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        orderItemMapper.updateOrderStatusByOrderId(orderId, "PAID");
         return Result.success();
     }
 

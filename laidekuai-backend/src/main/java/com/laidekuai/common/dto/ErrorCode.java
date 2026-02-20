@@ -20,6 +20,7 @@ public enum ErrorCode {
     FORBIDDEN(403, "无权限访问"),
     NOT_FOUND(404, "资源不存在"),
     INTERNAL_ERROR(500, "系统内部错误"),
+    CONFLICT(40901, "操作冲突，请刷新后重试"),
 
     // ========== 用户相关 (401xx) ==========
     USER_NOT_FOUND(40101, "用户不存在"),
