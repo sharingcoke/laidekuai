@@ -38,7 +38,17 @@ const fetchOrders = async () => {
       queryParams.endTime = ''
     }
 
-    const res = await orderApi.listAdmin(queryParams)
+    const params = {
+      page: queryParams.page,
+      size: queryParams.size,
+      status: queryParams.status || undefined,
+      orderNo: queryParams.orderNo || undefined,
+      buyerId: queryParams.buyerId || undefined,
+      sellerId: queryParams.sellerId || undefined,
+      startTime: queryParams.startTime || undefined,
+      endTime: queryParams.endTime || undefined
+    }
+    const res = await orderApi.listAdmin(params)
     if (res.code === 0) {
       orderList.value = res.data.records
       total.value = res.data.total
