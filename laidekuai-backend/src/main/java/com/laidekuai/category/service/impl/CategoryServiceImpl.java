@@ -225,7 +225,7 @@ public class CategoryServiceImpl implements CategoryService {
         long goodsCount = categoryMapper.countGoodsByCategory(categoryId);
         if (goodsCount > 0) {
             log.warn("分类下有商品，无法删除，分类ID: {}", categoryId);
-            return Result.error(ErrorCode.CATEGORY_HAS_GOODS);
+            return Result.error(ErrorCode.CONFLICT);
         }
 
         // 4. 软删除

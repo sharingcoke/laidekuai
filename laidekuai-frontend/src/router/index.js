@@ -96,6 +96,12 @@ const routes = [
     meta: { title: '评价管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/categories',
+    name: 'AdminCategories',
+    component: () => import('@/views/admin/CategoryManage.vue'),
+    meta: { title: '分类管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/admin/orders',
     name: 'AdminOrders',
     component: () => import('@/views/admin/OrderManage.vue'),

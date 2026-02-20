@@ -38,6 +38,9 @@ const authStore = useAuthStore()
                   <RouterLink to="/admin/reviews">评价管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
+                  <RouterLink to="/admin/categories">分类管理</RouterLink>
+                </el-dropdown-item>
+                <el-dropdown-item>
                   <RouterLink to="/admin/refunds">退款审核</RouterLink>
                 </el-dropdown-item>
               </el-dropdown-menu>
