@@ -60,4 +60,22 @@
           AND deleted = 0
     </update>
 
+    <!-- 根据订单ID更新订单主单状态（不修改订单项状态） -->
+    <update id="updateOrderStatusByOrderId">
+        UPDATE order_item
+        SET order_status = #{status},
+            updated_at = NOW()
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+    </update>
+
+    <!-- 统计未发货订单项数量 -->
+    <select id="countUnshippedItems" resultType="int">
+        SELECT COUNT(*)
+        FROM order_item
+        WHERE order_id = #{orderId}
+          AND deleted = 0
+          AND item_status != 'SHIPPED'
+    </select>
+
 </mapper>

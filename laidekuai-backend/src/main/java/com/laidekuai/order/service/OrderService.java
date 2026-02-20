@@ -4,6 +4,7 @@ import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
 import com.laidekuai.order.dto.OrderCreateRequest;
 import com.laidekuai.order.dto.OrderDTO;
+import com.laidekuai.order.dto.OrderItemDTO;
 import com.laidekuai.order.dto.ShipRequest;
 
 import java.util.List;
@@ -83,6 +84,26 @@ public interface OrderService {
      * @return 发货结果
      */
     Result<OrderDTO> shipOrder(Long orderId, ShipRequest request, Long userId);
+
+    /**
+     * 卖家发货（订单项级）
+     *
+     * @param orderItemId 订单项ID
+     * @param request     发货请求
+     * @param userId      当前用户ID（卖家）
+     * @return 发货结果
+     */
+    Result<OrderItemDTO> shipOrderItem(Long orderItemId, ShipRequest request, Long userId);
+
+    /**
+     * 管理员代发货（订单项级）
+     *
+     * @param orderItemId 订单项ID
+     * @param request     发货请求
+     * @param adminId     当前用户ID（管理员）
+     * @return 发货结果
+     */
+    Result<OrderItemDTO> shipOrderItemByAdmin(Long orderItemId, ShipRequest request, Long adminId);
 
     /**
      * 买家确认收货

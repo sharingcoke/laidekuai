@@ -124,6 +124,22 @@ class CartServiceTest {
     }
 
     @Test
+    void testAddToCart_ExistingItem_InsufficientStock() {
+        // Given
+        testGoods.setStock(3); // existing 2 + request 2 > stock 3
+        when(goodsMapper.selectById(1L)).thenReturn(testGoods);
+        when(cartMapper.findByUserAndGoods(100L, 1L)).thenReturn(testCart);
+
+        // When
+        var result = cartService.addToCart(addToCartRequest, 100L);
+
+        // Then
+        assertFalse(result.isSuccess());
+        verify(cartMapper, never()).updateById(any(Cart.class));
+        verify(cartMapper, never()).insert(any(Cart.class));
+    }
+
+    @Test
     void testAddToCart_GoodsNotFound() {
         // Given
         when(goodsMapper.selectById(1L)).thenReturn(null);

@@ -28,4 +28,28 @@ public interface OrderMapper extends BaseMapper<Order> {
      * @return 订单
      */
     Order selectByOrderNo(@Param("orderNo") String orderNo);
+
+    /**
+     * 条件取消订单（仅 PENDING_PAY）
+     *
+     * @param orderId      订单ID
+     * @param cancelReason 取消原因
+     * @param cancelTime   取消时间
+     * @param updatedAt    更新时间
+     * @return 影响行数
+     */
+    int markCanceledIfPending(@Param("orderId") Long orderId,
+                              @Param("cancelReason") String cancelReason,
+                              @Param("cancelTime") java.time.LocalDateTime cancelTime,
+                              @Param("updatedAt") java.time.LocalDateTime updatedAt);
+
+    /**
+     * 条件更新订单为已发货（仅 PAID）
+     *
+     * @param orderId   订单ID
+     * @param updatedAt 更新时间
+     * @return 影响行数
+     */
+    int markShippedIfPaid(@Param("orderId") Long orderId,
+                          @Param("updatedAt") java.time.LocalDateTime updatedAt);
 }

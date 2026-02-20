@@ -39,4 +39,21 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
      * @return 影响行数
      */
     int updateStatusByOrderId(@Param("orderId") Long orderId, @Param("status") String status);
+
+    /**
+     * 根据订单ID更新订单主单状态（不修改订单项状态）
+     *
+     * @param orderId 订单ID
+     * @param status  订单状态
+     * @return 影响行数
+     */
+    int updateOrderStatusByOrderId(@Param("orderId") Long orderId, @Param("status") String status);
+
+    /**
+     * 统计未发货订单项数量
+     *
+     * @param orderId 订单ID
+     * @return 未发货数量
+     */
+    int countUnshippedItems(@Param("orderId") Long orderId);
 }

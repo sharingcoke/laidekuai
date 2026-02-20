@@ -53,4 +53,26 @@
           AND deleted = 0
     </select>
 
+    <!-- 条件取消订单（仅 PENDING_PAY） -->
+    <update id="markCanceledIfPending">
+        UPDATE orders
+        SET status = 'CANCELED',
+            cancel_reason = #{cancelReason},
+            cancel_time = #{cancelTime},
+            updated_at = #{updatedAt}
+        WHERE id = #{orderId}
+          AND status = 'PENDING_PAY'
+          AND deleted = 0
+    </update>
+
+    <!-- 条件更新订单为已发货（仅 PAID） -->
+    <update id="markShippedIfPaid">
+        UPDATE orders
+        SET status = 'SHIPPED',
+            updated_at = #{updatedAt}
+        WHERE id = #{orderId}
+          AND status = 'PAID'
+          AND deleted = 0
+    </update>
+
 </mapper>
