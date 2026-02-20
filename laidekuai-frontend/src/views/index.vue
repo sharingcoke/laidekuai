@@ -18,6 +18,7 @@ const authStore = useAuthStore()
         <nav class="nav">
           <RouterLink to="/">首页</RouterLink>
           <RouterLink to="/goods">商品列表</RouterLink>
+          <RouterLink v-if="authStore.isAdmin" to="/admin/orders">管理端</RouterLink>
         </nav>
 
         <div class="user-actions">

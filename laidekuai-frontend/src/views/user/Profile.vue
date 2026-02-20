@@ -107,6 +107,9 @@ const updatePassword = async () => {
           <el-menu-item index="my-orders" @click="$router.push('/orders')">
             <span>我的订单</span>
           </el-menu-item>
+          <el-menu-item v-if="authStore.isAdmin" index="admin" @click="$router.push('/admin/orders')">
+            <span>管理端入口</span>
+          </el-menu-item>
         </el-menu>
       </div>
 

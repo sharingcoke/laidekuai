@@ -161,72 +161,93 @@ onMounted(() => {
       <el-tab-pane label="退款中" name="REFUNDING"></el-tab-pane>
     </el-tabs>
 
-    <div class="search-bar">
-      <el-input v-model="queryParams.orderNo" placeholder="订单号" style="width: 200px" clearable />
-      <el-input v-model="queryParams.buyerId" placeholder="买家ID" style="width: 140px" clearable />
-      <el-input v-model="queryParams.sellerId" placeholder="卖家ID" style="width: 140px" clearable />
-      <el-date-picker
-        v-model="createdRange"
-        type="datetimerange"
-        value-format="YYYY-MM-DD HH:mm:ss"
-        range-separator="至"
-        start-placeholder="开始时间"
-        end-placeholder="结束时间"
-      />
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-      <el-button @click="handleReset">重置</el-button>
-    </div>
+    <el-card class="filter-card" shadow="never">
+      <el-form class="filter-form" :inline="true" label-width="70px">
+        <el-form-item label="订单号">
+          <el-input v-model="queryParams.orderNo" placeholder="订单号" clearable />
+        </el-form-item>
+        <el-form-item label="买家ID">
+          <el-input v-model="queryParams.buyerId" placeholder="买家ID" clearable />
+        </el-form-item>
+        <el-form-item label="卖家ID">
+          <el-input v-model="queryParams.sellerId" placeholder="卖家ID" clearable />
+        </el-form-item>
+        <el-form-item label="时间">
+          <el-date-picker
+            v-model="createdRange"
+            type="datetimerange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
+        </el-form-item>
+        <el-form-item class="filter-actions">
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
-    <div class="table-container" v-loading="loading">
-      <el-table :data="orderList" style="width: 100%">
-        <el-table-column type="expand">
-          <template #default="{ row }">
-            <div class="item-list">
-              <div class="item-row" v-for="item in row.items" :key="item.id">
-                <div class="item-info">
-                  <div class="title">{{ item.goodsTitle }}</div>
-                  <div class="meta">数量: {{ item.quantity }} | 单价: {{ item.price }}</div>
-                </div>
-                <div class="item-status">
-                  <el-tag type="info">{{ formatItemStatus(item.itemStatus) }}</el-tag>
-                </div>
-                <div class="item-actions">
-                  <el-button
-                    v-if="canShip(row, item)"
-                    type="primary"
-                    size="small"
-                    @click="openShipDialog(item)"
-                  >
-                    代发货
-                  </el-button>
+    <el-card class="table-card" shadow="never">
+      <div class="table-container" v-loading="loading">
+        <el-table
+          :data="orderList"
+          style="width: 100%"
+          row-key="id"
+          stripe
+          border
+          empty-text="暂无订单"
+        >
+          <el-table-column type="expand">
+            <template #default="{ row }">
+              <div class="item-list">
+                <div class="item-row" v-for="item in row.items" :key="item.id">
+                  <div class="item-info">
+                    <div class="title">{{ item.goodsTitle }}</div>
+                    <div class="meta">数量: {{ item.quantity }} | 单价: {{ item.price }}</div>
+                  </div>
+                  <div class="item-status">
+                    <el-tag type="info">{{ formatItemStatus(item.itemStatus) }}</el-tag>
+                  </div>
+                  <div class="item-actions">
+                    <el-button
+                      v-if="canShip(row, item)"
+                      type="primary"
+                      size="small"
+                      @click="openShipDialog(item)"
+                    >
+                      代发货
+                    </el-button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderNo" label="订单号" min-width="180" />
-        <el-table-column prop="buyerId" label="买家ID" width="100" />
-        <el-table-column prop="sellerId" label="卖家ID" width="100" />
-        <el-table-column prop="totalAmount" label="金额" width="100" />
-        <el-table-column prop="status" label="状态" width="120">
-          <template #default="{ row }">
-            <el-tag>{{ formatStatus(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
-      </el-table>
+            </template>
+          </el-table-column>
+          <el-table-column prop="orderNo" label="订单号" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="buyerId" label="买家ID" width="100" />
+          <el-table-column prop="sellerId" label="卖家ID" width="100" />
+          <el-table-column prop="totalAmount" label="金额" width="120" />
+          <el-table-column prop="status" label="状态" width="120">
+            <template #default="{ row }">
+              <el-tag>{{ formatStatus(row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="创建时间" width="180" />
+        </el-table>
 
-      <div class="pagination-container" v-if="total > 0">
-        <el-pagination
-          v-model:current-page="queryParams.page"
-          v-model:page-size="queryParams.size"
-          layout="prev, pager, next, total"
-          :total="total"
-          @current-change="handleCurrentChange"
-          background
-        />
+        <div class="pagination-container" v-if="total > 0">
+          <el-pagination
+            v-model:current-page="queryParams.page"
+            v-model:page-size="queryParams.size"
+            layout="prev, pager, next, total"
+            :total="total"
+            @current-change="handleCurrentChange"
+            background
+          />
+        </div>
       </div>
-    </div>
+    </el-card>
 
     <el-dialog v-model="shipDialogVisible" title="代发货" width="420px">
       <el-form label-width="90px">
@@ -247,42 +268,73 @@ onMounted(() => {
 
 <style scoped>
 .admin-orders-page {
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 20px;
 }
 
 .page-header {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 22px;
 }
 
 .order-tabs {
   margin-bottom: 20px;
   background: white;
-  padding: 0 20px;
-  border-radius: 4px;
+  padding: 6px 16px;
+  border-radius: 8px;
 }
 
-.search-bar {
-  margin-bottom: 20px;
+.filter-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.filter-form {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.filter-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.table-card {
+  border-radius: 8px;
 }
 
 .table-container {
-  background: white;
-  padding: 20px;
-  border-radius: 4px;
+  padding: 6px 0 0;
 }
 
 .item-list {
-  padding: 10px 0;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 6px;
 }
 
 .item-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 120px 120px;
+  gap: 16px;
   align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px dashed #eee;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e5e7eb;
 }
 
 .item-row:last-child {
@@ -305,12 +357,10 @@ onMounted(() => {
 }
 
 .item-status {
-  width: 120px;
   text-align: center;
 }
 
 .item-actions {
-  width: 120px;
   text-align: right;
 }
 
