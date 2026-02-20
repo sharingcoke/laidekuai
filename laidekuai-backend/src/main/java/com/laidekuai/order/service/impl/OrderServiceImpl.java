@@ -9,6 +9,7 @@ import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
 import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.common.util.OrderNoGenerator;
+import com.laidekuai.common.util.SecurityUtils;
 import com.laidekuai.goods.entity.Goods;
 import com.laidekuai.goods.mapper.GoodsMapper;
 import com.laidekuai.order.dto.*;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -256,8 +258,8 @@ public class OrderServiceImpl implements OrderService {
         if (order == null || order.getDeleted() == 1) {
             return Result.error(ErrorCode.ORDER_NOT_FOUND);
         }
-        // 涔板鎴栧崠瀹跺彲鏌ョ湅
-        if (!order.getBuyerId().equals(userId) && !order.getSellerId().equals(userId)) {
+        // 涔板/鍗栧/绠＄悊鍛樺彲鏌ョ湅
+        if (!order.getBuyerId().equals(userId) && !order.getSellerId().equals(userId) && !SecurityUtils.isAdmin()) {
             return Result.error(ErrorCode.FORBIDDEN);
         }
 
@@ -302,6 +304,56 @@ public class OrderServiceImpl implements OrderService {
                 .eq(Order::getDeleted, 0);
         if (status != null && !status.isEmpty()) {
             wrapper.eq(Order::getStatus, status);
+        }
+        wrapper.orderByDesc(Order::getCreatedAt);
+
+        Page<Order> result = orderMapper.selectPage(pageParam, wrapper);
+
+        List<OrderDTO> dtos = result.getRecords().stream()
+                .map(order -> {
+                    List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
+                    return OrderDTO.fromOrder(order, items);
+                })
+                .collect(Collectors.toList());
+
+        PageResult<OrderDTO> pageResult = new PageResult<>();
+        pageResult.setRecords(dtos);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setCurrent(result.getCurrent());
+        pageResult.setSize(result.getSize());
+
+        return Result.success(pageResult);
+    }
+
+    @Override
+    public Result<PageResult<OrderDTO>> listAdminOrders(String status,
+                                                        Long buyerId,
+                                                        Long sellerId,
+                                                        String orderNo,
+                                                        LocalDateTime startAt,
+                                                        LocalDateTime endAt,
+                                                        Long page,
+                                                        Long size) {
+        Page<Order> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getDeleted, 0);
+        if (StringUtils.hasText(status)) {
+            wrapper.eq(Order::getStatus, status);
+        }
+        if (buyerId != null) {
+            wrapper.eq(Order::getBuyerId, buyerId);
+        }
+        if (sellerId != null) {
+            wrapper.eq(Order::getSellerId, sellerId);
+        }
+        if (StringUtils.hasText(orderNo)) {
+            wrapper.like(Order::getOrderNo, orderNo);
+        }
+        if (startAt != null) {
+            wrapper.ge(Order::getCreatedAt, startAt);
+        }
+        if (endAt != null) {
+            wrapper.le(Order::getCreatedAt, endAt);
         }
         wrapper.orderByDesc(Order::getCreatedAt);
 

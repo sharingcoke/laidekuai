@@ -76,6 +76,28 @@ public interface OrderService {
     Result<PageResult<OrderDTO>> listSellerOrders(Long userId, String status, Long page, Long size);
 
     /**
+     * 管理员订单列表
+     *
+     * @param status   状态筛选（可选）
+     * @param buyerId  买家ID（可选）
+     * @param sellerId 卖家ID（可选）
+     * @param orderNo  订单号（可选）
+     * @param startAt  开始时间（可选）
+     * @param endAt    结束时间（可选）
+     * @param page     页码
+     * @param size     每页大小
+     * @return 订单列表
+     */
+    Result<PageResult<OrderDTO>> listAdminOrders(String status,
+                                                 Long buyerId,
+                                                 Long sellerId,
+                                                 String orderNo,
+                                                 java.time.LocalDateTime startAt,
+                                                 java.time.LocalDateTime endAt,
+                                                 Long page,
+                                                 Long size);
+
+    /**
      * 卖家发货
      *
      * @param orderId 订单ID

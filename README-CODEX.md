@@ -26,5 +26,5 @@
 - Windows: `scripts/test.ps1`
 
 Notes:
-- Frontend has no test script configured; the test script will print a notice.
+- `laidekuai-frontend` 当前没有单元测试脚本；仓库根目录提供了 Playwright E2E 用例（`tests/`）。
 - For production-style routing, place a reverse proxy in front of the frontend and backend so `/api` points to the backend.

@@ -9,7 +9,7 @@ export default {
      */
     list() {
         return request({
-            url: '/address',
+            url: '/addresses',
             method: 'get'
         })
     },
@@ -19,7 +19,7 @@ export default {
      */
     add(data) {
         return request({
-            url: '/address',
+            url: '/addresses',
             method: 'post',
             data
         })
@@ -30,7 +30,7 @@ export default {
      */
     update(id, data) {
         return request({
-            url: `/address/${id}`,
+            url: `/addresses/${id}`,
             method: 'put',
             data
         })
@@ -41,18 +41,18 @@ export default {
      */
     delete(id) {
         return request({
-            url: `/address/${id}`,
+            url: `/addresses/${id}`,
             method: 'delete'
         })
     },
 
     /**
-     *设为默认地址
+     * 设置默认地址
      */
     setDefault(id) {
         return request({
-            url: `/address/${id}/default`,
-            method: 'post'
+            url: `/addresses/${id}/default`,
+            method: 'put'
         })
     }
 }
