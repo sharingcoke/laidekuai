@@ -531,6 +531,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 鏇存柊璁㈠崟鐘舵€佷负閫€娆句腑
         order.setStatus("REFUNDING");
+        order.setRefundReason(reason);
         order.setRefundRequestCount(refundCount + 1);
         order.setUpdatedAt(LocalDateTime.now());
         orderMapper.updateById(order);

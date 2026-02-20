@@ -70,6 +70,11 @@ public class Order {
     private LocalDateTime disputeTime;
 
     /**
+     * 退款原因
+     */
+    private String refundReason;
+
+    /**
      * 订单备注
      */
     private String remark;

@@ -23,6 +23,7 @@ public class OrderDTO {
     private BigDecimal totalAmount;
     private BigDecimal shippingFee;
     private String status;
+    private String refundReason;
     private String remark;
     private LocalDateTime payTime;
     private String receiverName;
@@ -44,6 +45,7 @@ public class OrderDTO {
         dto.setTotalAmount(order.getTotalAmount());
         dto.setShippingFee(order.getShippingFee());
         dto.setStatus(order.getStatus());
+        dto.setRefundReason(order.getRefundReason());
         dto.setRemark(order.getRemark());
         dto.setPayTime(order.getPayTime());
         dto.setReceiverName(order.getReceiverName());

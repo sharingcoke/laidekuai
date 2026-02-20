@@ -14,6 +14,7 @@
         <result column="cancel_reason" property="cancelReason"/>
         <result column="cancel_time" property="cancelTime"/>
         <result column="dispute_time" property="disputeTime"/>
+        <result column="refund_reason" property="refundReason"/>
         <result column="remark" property="remark"/>
         <result column="pay_time" property="payTime"/>
         <result column="address_id" property="addressId"/>
@@ -31,7 +32,7 @@
     <!-- 基础字段 -->
     <sql id="Base_Column_List">
         id, order_no, buyer_id, seller_id, total_amount, shipping_fee, status,
-        cancel_reason, cancel_time, dispute_time, remark, pay_time, address_id,
+        cancel_reason, cancel_time, dispute_time, refund_reason, remark, pay_time, address_id,
         receiver_name, receiver_phone, receiver_address, is_settled, settled_time,
         refund_request_count, created_at, updated_at, deleted
     </sql>

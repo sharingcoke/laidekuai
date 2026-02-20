@@ -99,7 +99,7 @@ onMounted(() => {
         </div>
         <div class="info-item full">
           <span class="label">申请原因</span>
-          <span class="value muted">暂无记录</span>
+          <span class="value">{{ order?.refundReason || '暂无记录' }}</span>
         </div>
       </div>
     </el-card>
