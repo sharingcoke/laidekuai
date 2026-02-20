@@ -90,8 +90,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("异常场景：用户名重复返回40901")
-    void register_UsernameDuplicate_Returns40901() {
+    @DisplayName("异常场景：用户名重复返回40102")
+    void register_UsernameDuplicate_Returns40102() {
         // Given: 用户名已存在
         RegisterRequest request = new RegisterRequest();
         request.setUsername("testuser");
