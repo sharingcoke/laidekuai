@@ -1,10 +1,13 @@
 package com.laidekuai.review.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.goods.entity.Goods;
+import com.laidekuai.goods.mapper.GoodsMapper;
 import com.laidekuai.order.entity.Order;
 import com.laidekuai.order.entity.OrderItem;
 import com.laidekuai.order.mapper.OrderItemMapper;
@@ -39,6 +42,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final UserMapper userMapper;
+    private final GoodsMapper goodsMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -77,6 +81,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(request.getRating());
         review.setContent(request.getContent());
         review.setIsAnonymous(request.getIsAnonymous() != null && request.getIsAnonymous() ? 1 : 0);
+        review.setStatus("visible");
         review.setCreatedAt(LocalDateTime.now());
 
         // 处理图片
@@ -137,6 +142,7 @@ public class ReviewServiceImpl implements ReviewService {
         LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Review::getGoodsId, goodsId)
                 .eq(Review::getDeleted, 0)
+                .eq(Review::getStatus, "visible")
                 .orderByDesc(Review::getCreatedAt);
 
         Page<Review> result = reviewMapper.selectPage(pageParam, wrapper);
@@ -170,6 +176,7 @@ public class ReviewServiceImpl implements ReviewService {
         LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Review::getBuyerId, userId)
                 .eq(Review::getDeleted, 0)
+                .eq(Review::getStatus, "visible")
                 .orderByDesc(Review::getCreatedAt);
 
         Page<Review> result = reviewMapper.selectPage(pageParam, wrapper);
@@ -189,5 +196,75 @@ public class ReviewServiceImpl implements ReviewService {
         pageResult.setSize(result.getSize());
 
         return Result.success(pageResult);
+    }
+
+    @Override
+    public Result<PageResult<ReviewDTO>> listAdminReviews(String status, Long page, Long size) {
+        Page<Review> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Review::getDeleted, 0);
+        if (status != null && !status.isBlank()) {
+            wrapper.eq(Review::getStatus, status);
+        }
+        wrapper.orderByDesc(Review::getCreatedAt);
+
+        Page<Review> result = reviewMapper.selectPage(pageParam, wrapper);
+        List<ReviewDTO> dtos = result.getRecords().stream()
+                .map(review -> {
+                    User user = userMapper.selectById(review.getBuyerId());
+                    String nickname = user != null ? user.getNickName() : null;
+                    ReviewDTO dto = ReviewDTO.fromReview(review, nickname);
+                    Goods goods = goodsMapper.selectById(review.getGoodsId());
+                    if (goods != null) {
+                        dto.setGoodsTitle(goods.getTitle());
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        PageResult<ReviewDTO> pageResult = new PageResult<>();
+        pageResult.setRecords(dtos);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setCurrent(result.getCurrent());
+        pageResult.setSize(result.getSize());
+
+        return Result.success(pageResult);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> hideReview(Long reviewId, Long adminId) {
+        log.info("管理员 {} 隐藏评价 {}", adminId, reviewId);
+
+        LambdaUpdateWrapper<Review> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Review::getId, reviewId)
+                .eq(Review::getDeleted, 0)
+                .eq(Review::getStatus, "visible")
+                .set(Review::getStatus, "hidden")
+                .set(Review::getUpdatedAt, LocalDateTime.now());
+
+        int updated = reviewMapper.update(null, wrapper);
+        if (updated == 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> deleteReview(Long reviewId, Long adminId) {
+        log.info("管理员 {} 删除评价 {}", adminId, reviewId);
+
+        LambdaUpdateWrapper<Review> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Review::getId, reviewId)
+                .eq(Review::getDeleted, 0)
+                .set(Review::getStatus, "deleted")
+                .set(Review::getUpdatedAt, LocalDateTime.now());
+
+        int updated = reviewMapper.update(null, wrapper);
+        if (updated == 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        return Result.success();
     }
 }

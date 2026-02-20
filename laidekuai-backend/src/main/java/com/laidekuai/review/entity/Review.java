@@ -79,6 +79,11 @@ public class Review {
     private LocalDateTime replyTime;
 
     /**
+     * 状态（visible/hidden/deleted）
+     */
+    private String status;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

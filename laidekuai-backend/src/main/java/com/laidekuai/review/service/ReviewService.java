@@ -58,4 +58,32 @@ public interface ReviewService {
      * @return 评价列表
      */
     Result<PageResult<ReviewDTO>> listMyReviews(Long userId, Long page, Long size);
+
+    /**
+     * 管理员评价列表
+     *
+     * @param status 状态（visible/hidden/deleted）
+     * @param page   页码
+     * @param size   每页大小
+     * @return 评价列表
+     */
+    Result<PageResult<ReviewDTO>> listAdminReviews(String status, Long page, Long size);
+
+    /**
+     * 管理员隐藏评价
+     *
+     * @param reviewId 评价ID
+     * @param adminId  管理员ID
+     * @return 结果
+     */
+    Result<Void> hideReview(Long reviewId, Long adminId);
+
+    /**
+     * 管理员删除评价（软删）
+     *
+     * @param reviewId 评价ID
+     * @param adminId  管理员ID
+     * @return 结果
+     */
+    Result<Void> deleteReview(Long reviewId, Long adminId);
 }

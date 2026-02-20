@@ -19,6 +19,7 @@ public class ReviewDTO {
     private Long orderId;
     private Long orderItemId;
     private Long goodsId;
+    private String goodsTitle;
     private Long buyerId;
     private String buyerName; // 买家昵称（若匿名则显示"匿名用户"）
     private Long sellerId;
@@ -29,6 +30,7 @@ public class ReviewDTO {
     private String reply;
     private LocalDateTime replyTime;
     private LocalDateTime createdAt;
+    private String status;
 
     /**
      * 从Review实体转换
@@ -39,6 +41,7 @@ public class ReviewDTO {
         dto.setOrderId(review.getOrderId());
         dto.setOrderItemId(review.getOrderItemId());
         dto.setGoodsId(review.getGoodsId());
+        dto.setGoodsTitle(null);
         dto.setBuyerId(review.getBuyerId());
         dto.setSellerId(review.getSellerId());
         dto.setRating(review.getRating());
@@ -47,6 +50,7 @@ public class ReviewDTO {
         dto.setReply(review.getReply());
         dto.setReplyTime(review.getReplyTime());
         dto.setCreatedAt(review.getCreatedAt());
+        dto.setStatus(review.getStatus());
 
         // 处理匿名
         if (review.getIsAnonymous() == 1) {

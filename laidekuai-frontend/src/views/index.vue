@@ -35,6 +35,9 @@ const authStore = useAuthStore()
                   <RouterLink to="/admin/users">用户管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
+                  <RouterLink to="/admin/reviews">评价管理</RouterLink>
+                </el-dropdown-item>
+                <el-dropdown-item>
                   <RouterLink to="/admin/refunds">退款审核</RouterLink>
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -66,7 +69,7 @@ const authStore = useAuthStore()
         <RouterLink to="/goods" class="btn btn-large">开始购物</RouterLink>
       </div>
 
-      <div class="features">
+      <div class="features stagger-enter">
         <div class="feature">
           <h3>买卖一体</h3>
           <p>所有登录用户均可发布商品</p>
@@ -97,10 +100,9 @@ const authStore = useAuthStore()
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.88);
+  background: #fff;
   border-bottom: 1px solid var(--ldk-border);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(8px);
+  box-shadow: none;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -141,8 +143,8 @@ const authStore = useAuthStore()
 .nav-link {
   color: var(--ldk-text-regular);
   font-size: 15px;
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 8px 12px;
+  border-radius: 8px;
   transition: all 0.25s;
   font-weight: 500;
   display: inline-flex;
@@ -183,8 +185,8 @@ const authStore = useAuthStore()
 }
 
 .btn {
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 14px;
   transition: all 0.25s;
   border: 1px solid var(--ldk-border-strong);
@@ -194,8 +196,8 @@ const authStore = useAuthStore()
 }
 
 .btn:hover {
-  border-color: #becce3;
-  background: #f8faff;
+  border-color: var(--ldk-primary-border);
+  background: #f5f8ff;
 }
 
 .btn-primary {
@@ -205,30 +207,31 @@ const authStore = useAuthStore()
 }
 
 .btn-primary:hover {
-  background: #255de6;
-  border-color: #255de6;
+  background: #335dc4;
+  border-color: #335dc4;
 }
 
 .btn-outline {
   color: var(--ldk-primary);
-  border-color: #b9cdfd;
-  background: #f7faff;
+  border-color: var(--ldk-primary-border);
+  background: #f5f8ff;
 }
 
 .btn-large {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 32px;
-  font-size: 16px;
+  padding: 10px 26px;
+  font-size: 15px;
   background: var(--ldk-primary);
   color: white;
-  border: none;
-  box-shadow: 0 12px 22px rgba(47, 107, 255, 0.26);
+  border: 1px solid var(--ldk-primary);
+  border-radius: 10px;
 }
 
 .btn-large:hover {
-  background: #255de6;
+  background: #335dc4;
+  border-color: #335dc4;
 }
 
 .main {
@@ -240,24 +243,24 @@ const authStore = useAuthStore()
 
 .hero {
   text-align: center;
-  padding: 64px 20px;
-  background: linear-gradient(140deg, #f9fbff 0%, #f3f8ff 100%);
+  padding: 52px 20px;
+  background: #fff;
   border: 1px solid var(--ldk-border);
-  border-radius: 18px;
+  border-radius: 14px;
   margin-bottom: 24px;
-  box-shadow: var(--ldk-shadow-md);
+  box-shadow: var(--ldk-shadow-sm);
 }
 
 .hero h2 {
-  font-size: 42px;
+  font-size: 36px;
   color: var(--ldk-text-primary);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .hero p {
-  font-size: 17px;
+  font-size: 16px;
   color: var(--ldk-text-secondary);
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 
 .features {
@@ -269,9 +272,9 @@ const authStore = useAuthStore()
 .feature {
   background: #fff;
   border: 1px solid var(--ldk-border);
-  box-shadow: var(--ldk-shadow-sm);
-  padding: 26px 24px;
-  border-radius: 14px;
+  box-shadow: none;
+  padding: 24px 22px;
+  border-radius: 12px;
   text-align: center;
 }
 
@@ -288,7 +291,7 @@ const authStore = useAuthStore()
 
 .footer {
   border-top: 1px solid var(--ldk-border);
-  background: #f5f8fd;
+  background: transparent;
   color: var(--ldk-text-secondary);
   text-align: center;
   padding: 16px;

@@ -16,6 +16,7 @@
         <result column="is_anonymous" property="isAnonymous"/>
         <result column="reply" property="reply"/>
         <result column="reply_time" property="replyTime"/>
+        <result column="status" property="status"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
         <result column="deleted" property="deleted"/>
@@ -24,7 +25,7 @@
     <!-- 基础字段 -->
     <sql id="Base_Column_List">
         id, order_id, order_item_id, goods_id, buyer_id, seller_id, rating, content,
-        images, is_anonymous, reply, reply_time, created_at, updated_at, deleted
+        images, is_anonymous, reply, reply_time, status, created_at, updated_at, deleted
     </sql>
 
     <!-- 查询商品评价列表 -->
@@ -58,6 +59,7 @@
         FROM review
         WHERE goods_id = #{goodsId}
           AND deleted = 0
+          AND status = 'visible'
     </select>
 
 </mapper>
