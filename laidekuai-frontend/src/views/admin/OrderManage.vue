@@ -42,11 +42,11 @@ const fetchOrders = async () => {
       page: queryParams.page,
       size: queryParams.size,
       status: queryParams.status || undefined,
-      orderNo: queryParams.orderNo || undefined,
-      buyerId: queryParams.buyerId || undefined,
-      sellerId: queryParams.sellerId || undefined,
-      startTime: queryParams.startTime || undefined,
-      endTime: queryParams.endTime || undefined
+      order_no: queryParams.orderNo || undefined,
+      buyer_id: queryParams.buyerId || undefined,
+      seller_id: queryParams.sellerId || undefined,
+      start_time: queryParams.startTime || undefined,
+      end_time: queryParams.endTime || undefined
     }
     const res = await orderApi.listAdmin(params)
     if (res.code === 0) {

@@ -30,12 +30,12 @@ public class AdminOrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public Result<PageResult<OrderDTO>> listAdminOrders(
             @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "buyerId", required = false) Long buyerId,
-            @RequestParam(value = "sellerId", required = false) Long sellerId,
-            @RequestParam(value = "orderNo", required = false) String orderNo,
-            @RequestParam(value = "startTime", required = false)
+            @RequestParam(value = "buyer_id", required = false) Long buyerId,
+            @RequestParam(value = "seller_id", required = false) Long sellerId,
+            @RequestParam(value = "order_no", required = false) String orderNo,
+            @RequestParam(value = "start_time", required = false)
             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
-            @RequestParam(value = "endTime", required = false)
+            @RequestParam(value = "end_time", required = false)
             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime,
             @RequestParam(value = "page", defaultValue = "1") Long page,
             @RequestParam(value = "size", defaultValue = "10") Long size) {
