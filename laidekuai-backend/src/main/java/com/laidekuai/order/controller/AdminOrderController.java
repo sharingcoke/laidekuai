@@ -1,0 +1,44 @@
+package com.laidekuai.order.controller;
+
+import com.laidekuai.common.dto.PageResult;
+import com.laidekuai.common.dto.Result;
+import com.laidekuai.order.dto.OrderDTO;
+import com.laidekuai.order.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+
+/**
+ * 管理员订单控制器
+ */
+@Slf4j
+@RestController
+@RequestMapping("/admin/orders")
+@RequiredArgsConstructor
+public class AdminOrderController {
+
+    private final OrderService orderService;
+
+    /**
+     * GET /api/admin/orders
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<PageResult<OrderDTO>> listAdminOrders(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "buyerId", required = false) Long buyerId,
+            @RequestParam(value = "sellerId", required = false) Long sellerId,
+            @RequestParam(value = "orderNo", required = false) String orderNo,
+            @RequestParam(value = "startTime", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+            @RequestParam(value = "endTime", required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime,
+            @RequestParam(value = "page", defaultValue = "1") Long page,
+            @RequestParam(value = "size", defaultValue = "10") Long size) {
+        return orderService.listAdminOrders(status, buyerId, sellerId, orderNo, startTime, endTime, page, size);
+    }
+}

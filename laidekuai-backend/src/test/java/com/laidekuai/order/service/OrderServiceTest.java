@@ -14,6 +14,7 @@ import com.laidekuai.order.entity.OrderItem;
 import com.laidekuai.order.mapper.OrderItemMapper;
 import com.laidekuai.order.mapper.OrderMapper;
 import com.laidekuai.order.service.impl.OrderServiceImpl;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -233,5 +235,30 @@ class OrderServiceTest {
         assertTrue(result.isSuccess());
         verify(orderMapper).markShippedIfPaid(eq(1L), any(LocalDateTime.class));
         verify(orderItemMapper).updateStatusByOrderId(1L, "SHIPPED");
+    }
+
+    @Test
+    void testListAdminOrders_ReturnsItems() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setDeleted(0);
+
+        OrderItem item = new OrderItem();
+        item.setId(2L);
+        item.setOrderId(1L);
+
+        Page<Order> page = new Page<>(1, 10);
+        page.setRecords(Collections.singletonList(order));
+        page.setTotal(1);
+
+        when(orderMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(orderItemMapper.selectByOrderId(1L)).thenReturn(Collections.singletonList(item));
+
+        Result<com.laidekuai.common.dto.PageResult<com.laidekuai.order.dto.OrderDTO>> result =
+                orderService.listAdminOrders(null, null, null, null, null, null, 1L, 10L);
+
+        assertTrue(result.isSuccess());
+        assertEquals(1, result.getData().getRecords().size());
+        assertEquals(1, result.getData().getRecords().get(0).getItems().size());
     }
 }

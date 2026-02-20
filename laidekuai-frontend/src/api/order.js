@@ -82,6 +82,17 @@ export default {
     },
 
     /**
+     * 管理员订单列表
+     */
+    listAdmin(params) {
+        return request({
+            url: '/admin/orders',
+            method: 'get',
+            params
+        })
+    },
+
+    /**
      * 订单详情
      */
     detail(id) {

@@ -90,6 +90,12 @@ const routes = [
     meta: { title: '商品审核 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/orders',
+    name: 'AdminOrders',
+    component: () => import('@/views/admin/OrderManage.vue'),
+    meta: { title: '订单管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/seller/orders',
     name: 'SellerOrders',
     component: () => import('@/views/seller/SalesOrders.vue'),
