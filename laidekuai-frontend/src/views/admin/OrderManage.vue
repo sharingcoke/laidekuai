@@ -149,12 +149,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="admin-orders-page">
+  <div class="admin-orders-page page-shell">
     <div class="page-header">
-      <h2>订单管理</h2>
+      <div>
+        <h2>订单管理</h2>
+        <p class="page-desc">筛选、展开明细和代发货操作集中在统一后台视图。</p>
+      </div>
     </div>
 
-    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs">
+    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs panel-card tabs-panel">
       <el-tab-pane label="全部订单" name="all"></el-tab-pane>
       <el-tab-pane label="待发货" name="PAID"></el-tab-pane>
       <el-tab-pane label="已发货" name="SHIPPED"></el-tab-pane>
@@ -250,7 +253,7 @@ onMounted(() => {
     </el-card>
 
     <el-dialog v-model="shipDialogVisible" title="代发货" width="420px">
-      <el-form label-width="90px">
+      <el-form label-width="96px" class="form-standard dialog-form">
         <el-form-item label="物流公司">
           <el-input v-model="shipForm.shipCompany" placeholder="请输入物流公司" />
         </el-form-item>
@@ -267,34 +270,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.admin-orders-page {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 22px;
-}
-
 .order-tabs {
-  margin-bottom: 20px;
-  background: white;
-  padding: 6px 16px;
-  border-radius: 8px;
+  margin-bottom: 16px;
 }
 
 .filter-card {
   margin-bottom: 16px;
-  border-radius: 8px;
 }
 
 .filter-form {
@@ -315,7 +296,7 @@ onMounted(() => {
 }
 
 .table-card {
-  border-radius: 8px;
+  margin-bottom: 0;
 }
 
 .table-container {
@@ -324,8 +305,8 @@ onMounted(() => {
 
 .item-list {
   padding: 8px 12px;
-  background: #fafafa;
-  border-radius: 6px;
+  background: #f8faff;
+  border-radius: 10px;
 }
 
 .item-row {
@@ -365,7 +346,18 @@ onMounted(() => {
 }
 
 .pagination-container {
-  margin-top: 20px;
-  text-align: right;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .item-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .item-status,
+  .item-actions {
+    text-align: left;
+  }
 }
 </style>

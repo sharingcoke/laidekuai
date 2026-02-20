@@ -141,7 +141,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="goods-detail-page" v-loading="loading">
+  <div class="goods-detail-page page-shell" v-loading="loading">
     <div v-if="goods" class="goods-detail-container">
       
       <!-- 面包屑 -->
@@ -151,7 +151,7 @@ onMounted(() => {
         <el-breadcrumb-item>详情</el-breadcrumb-item>
       </el-breadcrumb>
 
-      <div class="detail-main">
+      <div class="detail-main panel-card">
         <!-- 左侧图片区 -->
         <div class="gallery">
           <div class="main-image">
@@ -210,7 +210,7 @@ onMounted(() => {
             
             <div class="btn-group">
                 <el-button type="primary" size="large" @click="buyNow">立即购买</el-button>
-                <el-button type="warning" size="large" :icon="ShoppingCart" :loading="addingToCart" @click="addToCart">
+                <el-button type="primary" plain size="large" :icon="ShoppingCart" :loading="addingToCart" @click="addToCart">
                     加入购物车
                 </el-button>
             </div>
@@ -233,7 +233,7 @@ onMounted(() => {
       </div>
 
       <!-- 详情描述区 -->
-      <div class="detail-content-section">
+      <div class="detail-content-section panel-card">
           <h3>商品详情</h3>
           <div class="content-body" v-html="goods.detail || '暂无描述'"></div>
       </div>
@@ -244,38 +244,30 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.goods-detail-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
 .breadcrumb {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .detail-main {
   display: flex;
-  gap: 40px;
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  margin-bottom: 30px;
+  gap: 32px;
+  padding: 28px;
+  margin-bottom: 24px;
 }
 
 .gallery {
-  width: 400px;
+  width: 420px;
   flex-shrink: 0;
 }
 
 .main-image {
   width: 100%;
-  height: 400px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  height: 420px;
+  border: 1px solid var(--ldk-border);
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  background: #fbfcfe;
 }
 
 .image-viewer {
@@ -290,16 +282,17 @@ onMounted(() => {
 }
 
 .thumbnail-item {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border: 2px solid transparent;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
+  transition: border-color 0.2s;
 }
 
 .thumbnail-item.active {
-  border-color: #409eff;
+  border-color: var(--ldk-primary);
 }
 
 .info-panel {
@@ -307,98 +300,120 @@ onMounted(() => {
 }
 
 .title {
-  font-size: 24px;
-  color: #303133;
-  margin: 0 0 10px;
+  font-size: 28px;
+  color: var(--ldk-text-primary);
+  margin: 0 0 8px;
+  line-height: 1.35;
 }
 
 .subtitle {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 20px;
+  font-size: 15px;
+  color: var(--ldk-text-secondary);
+  margin-bottom: 18px;
 }
 
 .price-box {
-  background: #fff0f0;
-  padding: 15px;
-  border-radius: 4px;
+  background: linear-gradient(120deg, #fff2f2 0%, #fff8f1 100%);
+  border: 1px solid #ffdede;
+  padding: 16px 18px;
+  border-radius: 10px;
   margin-bottom: 20px;
-  color: #f56c6c;
+  color: #e05555;
 }
 
 .currency {
-  font-size: 18px;
+  font-size: 20px;
   margin-right: 4px;
 }
 
 .price {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: bold;
 }
 
 .meta-info {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+  display: grid;
+  gap: 10px;
 }
 
 .meta-row {
-  margin-bottom: 12px;
   font-size: 14px;
+  display: flex;
 }
 
 .label {
-  color: #909399;
-  width: 60px;
-  display: inline-block;
+  color: var(--ldk-text-secondary);
+  width: 72px;
+  flex-shrink: 0;
 }
 
 .value {
-  color: #606266;
+  color: var(--ldk-text-regular);
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 
 .quantity-input {
-    width: 120px;
+  width: 130px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .secondary-actions {
-    margin-top: 20px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ldk-border);
 }
 
 .detail-content-section {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  padding: 26px 28px;
 }
 
 .detail-content-section h3 {
-    margin-top: 0;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+  margin-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ldk-border);
+  margin-bottom: 18px;
+  font-size: 20px;
+  color: var(--ldk-text-primary);
 }
 
 .content-body {
-    line-height: 1.6;
-    color: #606266;
+  line-height: 1.75;
+  color: var(--ldk-text-regular);
 }
 
 @media (max-width: 768px) {
   .detail-main {
     flex-direction: column;
+    padding: 18px;
   }
+
   .gallery {
     width: 100%;
   }
+
   .main-image {
     height: 300px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .price {
+    font-size: 30px;
   }
 }
 </style>

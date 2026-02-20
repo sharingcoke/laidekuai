@@ -94,8 +94,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="goods-list-page">
-    <div class="search-bar">
+  <div class="goods-list-page page-shell">
+    <div class="page-header">
+      <div>
+        <h2>商品广场</h2>
+        <p class="page-desc">按分类或关键词快速筛选，卡片式浏览更清晰。</p>
+      </div>
+    </div>
+
+    <div class="search-bar search-panel panel-card toolbar-panel">
       <CategorySelect
         v-model="queryParams.categoryId"
         class="category-select"
@@ -169,19 +176,9 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.goods-list-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.search-bar {
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+.search-panel {
+  justify-content: flex-start;
+  margin-bottom: 20px;
 }
 
 .category-select {
@@ -195,22 +192,23 @@ onMounted(() => {
 
 .goods-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
 }
 
 .goods-card {
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 12px;
 }
 
 .goods-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
 
 .goods-image-wrapper {
-  height: 260px;
+  height: 220px;
   overflow: hidden;
   position: relative;
   background: #f5f7fa;
@@ -232,12 +230,13 @@ onMounted(() => {
 }
 
 .goods-info {
-  padding: 14px;
+  padding: 14px 16px 16px;
 }
 
 .goods-title {
   margin: 0 0 10px;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
   color: #303133;
   line-height: 1.4;
   height: 44px; /* 2 lines */
@@ -249,8 +248,8 @@ onMounted(() => {
 }
 
 .goods-price {
-  font-size: 20px;
-  color: #f56c6c;
+  font-size: 21px;
+  color: #e05555;
   font-weight: bold;
   margin-bottom: 8px;
 }
@@ -263,8 +262,6 @@ onMounted(() => {
 }
 
 .pagination-container {
-  display: flex;
   justify-content: center;
-  margin-top: 20px;
 }
 </style>

@@ -122,13 +122,16 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="publish-page">
+  <div class="publish-page page-shell page-shell-narrow">
     <div class="page-header">
-         <h2>{{ isEdit ? '编辑商品' : '发布新商品' }}</h2>
+      <div>
+        <h2>{{ isEdit ? '编辑商品' : '发布新商品' }}</h2>
+        <p class="page-desc">统一填写基础信息、库存与图片，发布流程更规整。</p>
+      </div>
     </div>
 
-    <div class="form-container" v-loading="loading">
-        <el-form :model="form" label-width="100px">
+    <div class="form-container panel-card" v-loading="loading">
+        <el-form :model="form" label-width="96px" class="publish-form form-standard">
             <el-form-item label="商品标题" required>
                 <el-input v-model="form.title" placeholder="请输入商品标题" maxlength="100" show-word-limit />
             </el-form-item>
@@ -169,7 +172,7 @@ const handleSubmit = async () => {
                 <el-input v-model="form.detail" type="textarea" rows="6" placeholder="详细描述您的商品..." />
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item class="form-actions">
                 <el-button type="primary" size="large" :loading="submitting" @click="handleSubmit">
                     {{ isEdit ? '保存修改' : '立即发布' }}
                 </el-button>
@@ -181,25 +184,27 @@ const handleSubmit = async () => {
 </template>
 
 <style scoped>
-.publish-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
-.page-header {
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-}
 .form-container {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    padding: 26px 28px;
 }
+
+.publish-form {
+    max-width: 760px;
+}
+
 .tips {
     font-size: 12px;
     color: #909399;
-    margin-top: 5px;
+    margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 18px 16px;
+  }
+
+  .publish-form {
+    max-width: 100%;
+  }
 }
 </style>

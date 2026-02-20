@@ -106,12 +106,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="seller-orders-page">
+  <div class="seller-orders-page page-shell">
     <div class="page-header">
-      <h2>卖家订单</h2>
+      <div>
+        <h2>卖家订单</h2>
+        <p class="page-desc">聚焦待发货与履约进度，明细与操作区间距统一。</p>
+      </div>
     </div>
 
-    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs">
+    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs panel-card tabs-panel">
       <el-tab-pane label="全部订单" name="all"></el-tab-pane>
       <el-tab-pane label="待发货" name="PAID"></el-tab-pane>
       <el-tab-pane label="已发货" name="SHIPPED"></el-tab-pane>
@@ -166,7 +169,7 @@ onMounted(() => {
     </div>
 
     <el-dialog v-model="shipDialogVisible" title="订单项发货" width="420px">
-      <el-form label-width="90px">
+      <el-form label-width="96px" class="form-standard dialog-form">
         <el-form-item label="物流公司">
           <el-input v-model="shipForm.shipCompany" placeholder="请输入物流公司" />
         </el-form-item>
@@ -183,39 +186,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.seller-orders-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-}
-
 .order-tabs {
-  margin-bottom: 20px;
-  background: white;
-  padding: 0 20px;
-  border-radius: 4px;
+  margin-bottom: 16px;
 }
 
 .order-item {
   background: white;
-  border: 1px solid #eee;
-  margin-bottom: 20px;
-  border-radius: 4px;
+  border: 1px solid var(--ldk-border);
+  margin-bottom: 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--ldk-shadow-sm);
 }
 
 .order-header {
-  padding: 10px 20px;
-  background: #fbfbfb;
-  border-bottom: 1px solid #eee;
+  padding: 12px 18px;
+  background: #f9fbff;
+  border-bottom: 1px solid var(--ldk-border);
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: #666;
-  gap: 20px;
+  font-size: 13px;
+  color: var(--ldk-text-secondary);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .status-tag {
@@ -223,14 +216,14 @@ onMounted(() => {
 }
 
 .order-body {
-  padding: 20px;
+  padding: 16px 18px;
 }
 
 .goods-item {
   display: flex;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px dashed #eee;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--ldk-border);
 }
 
 .goods-item:last-child {
@@ -243,7 +236,8 @@ onMounted(() => {
 
 .goods-title {
   font-size: 14px;
-  color: #333;
+  color: var(--ldk-text-primary);
+  font-weight: 500;
   margin-bottom: 4px;
 }
 
@@ -263,7 +257,20 @@ onMounted(() => {
 }
 
 .pagination-container {
-  text-align: center;
-  margin-top: 20px;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .goods-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .item-status,
+  .item-actions {
+    width: 100%;
+    text-align: left;
+  }
 }
 </style>

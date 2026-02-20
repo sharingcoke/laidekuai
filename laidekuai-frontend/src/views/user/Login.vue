@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -69,10 +70,10 @@ const goToRegister = () => {
 
 <template>
   <div class="login-page">
-    <div class="login-container">
+    <div class="login-container panel-card">
       <div class="login-header">
         <h1>登录</h1>
-        <p>欢迎来到来得快</p>
+        <p>欢迎回到来得快，继续你的交易流程</p>
       </div>
 
       <el-form :model="form" class="login-form" @submit.prevent="handleLogin">
@@ -81,7 +82,7 @@ const goToRegister = () => {
             v-model="form.username"
             placeholder="请输入用户名"
             size="large"
-            :prefix-icon="'User'"
+            :prefix-icon="User"
           />
         </el-form-item>
 
@@ -91,13 +92,13 @@ const goToRegister = () => {
             type="password"
             placeholder="请输入密码"
             size="large"
-            :prefix-icon="'Lock'"
+            :prefix-icon="Lock"
             show-password
             @keyup.enter="handleLogin"
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="form-actions">
           <el-button
             type="primary"
             size="large"
@@ -124,49 +125,62 @@ const goToRegister = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px;
+  background:
+    radial-gradient(circle at 14% 8%, #dce9ff 0, rgba(220, 233, 255, 0) 36%),
+    radial-gradient(circle at 90% 82%, #d9f1ff 0, rgba(217, 241, 255, 0) 34%),
+    #f2f6fc;
 }
 
 .login-container {
-  width: 400px;
-  background: white;
-  border-radius: 8px;
-  padding: 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: min(440px, 100%);
+  padding: 34px 32px 28px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .login-header h1 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 30px;
+  color: var(--ldk-text-primary);
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .login-header p {
   font-size: 14px;
-  color: #999;
+  color: var(--ldk-text-secondary);
 }
 
 .login-form {
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .login-button {
   width: 100%;
+  margin-top: 6px;
 }
 
 .login-footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 14px;
   font-size: 14px;
-  color: #666;
+  color: var(--ldk-text-secondary);
 }
 
 .login-footer .el-link {
   margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 14px;
+  }
+
+  .login-container {
+    padding: 24px 18px 20px;
+  }
 }
 </style>

@@ -126,12 +126,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="cart-page">
+  <div class="cart-page page-shell">
     <div class="page-header">
-      <h2>购物车 ({{ cartList.length }})</h2>
+      <div>
+        <h2>购物车 ({{ cartList.length }})</h2>
+        <p class="page-desc">勾选后统一结算，数量与金额实时同步。</p>
+      </div>
     </div>
 
-    <div class="cart-container" v-loading="loading">
+    <div class="cart-container panel-card table-panel" v-loading="loading">
       <el-table 
         :data="cartList" 
         style="width: 100%" 
@@ -208,29 +211,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.cart-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 24px;
-  color: #303133;
-}
 
 .cart-container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  padding-top: 16px;
+  padding-bottom: 16px;
   min-height: 400px;
 }
 
@@ -243,15 +227,16 @@ onMounted(() => {
 .goods-cover {
   width: 80px;
   height: 80px;
-  border-radius: 4px;
-  border: 1px solid #eee;
+  border-radius: 8px;
+  border: 1px solid var(--ldk-border);
 }
 
 .goods-title {
-  color: #303133;
+  color: var(--ldk-text-primary);
   text-decoration: none;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.45;
+  font-weight: 500;
 }
 
 .goods-title:hover {
@@ -264,14 +249,14 @@ onMounted(() => {
 }
 
 .subtotal {
-  color: #f56c6c;
+  color: var(--ldk-danger);
   font-weight: bold;
 }
 
 .cart-footer {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ldk-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -289,7 +274,24 @@ onMounted(() => {
 
 .total-price {
   font-size: 24px;
-  color: #f56c6c;
+  color: var(--ldk-danger);
   font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .goods-info {
+    align-items: flex-start;
+  }
+
+  .goods-cover {
+    width: 68px;
+    height: 68px;
+  }
+
+  .cart-footer {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+  }
 }
 </style>

@@ -79,22 +79,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="goods-audit-page">
+  <div class="goods-audit-page page-shell">
      <div class="page-header">
+       <div>
          <h2>商品审核与管理</h2>
+         <p class="page-desc">按待审优先展示，审核与检索区域分层更明确。</p>
+       </div>
      </div>
 
-     <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="audit-tabs">
+     <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="audit-tabs panel-card tabs-panel">
          <el-tab-pane label="待审核" name="PENDING"></el-tab-pane>
          <el-tab-pane label="全部商品" name="all"></el-tab-pane>
      </el-tabs>
 
-     <div class="search-bar">
+     <div class="search-bar search-panel panel-card toolbar-panel">
          <el-input v-model="queryParams.keyword" placeholder="搜索商品标题" style="width: 300px" clearable @change="fetchGoods" />
          <el-button type="primary" @click="fetchGoods">搜索</el-button>
      </div>
 
-     <div class="table-container" v-loading="loading">
+     <div class="table-container panel-card table-panel" v-loading="loading">
          <el-table :data="goodsList" style="width: 100%">
              <el-table-column label="商品信息" min-width="300">
                 <template #default="{ row }">
@@ -140,52 +143,43 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.goods-audit-page {
-    padding: 20px;
-}
-.page-header {
-    margin-bottom: 20px;
-}
 .audit-tabs {
-    margin-bottom: 20px;
-    background: white;
-    padding: 0 20px;
-    border-radius: 4px;
+    margin-bottom: 16px;
 }
-.search-bar {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
+
+.search-panel {
+    margin-bottom: 16px;
 }
+
 .table-container {
-    background: white;
-    padding: 20px;
-    border-radius: 4px;
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 .goods-info {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
 }
 .goods-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    border: 1px solid var(--ldk-border);
 }
 .goods-detail {
     overflow: hidden;
 }
 .goods-title {
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 5px;
+    color: var(--ldk-text-primary);
 }
 .seller {
     font-size: 12px;
     color: #909399;
 }
 .pagination-container {
-    margin-top: 20px;
-    text-align: right;
+    margin-top: 16px;
 }
 </style>

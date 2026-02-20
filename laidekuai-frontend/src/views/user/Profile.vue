@@ -81,13 +81,16 @@ const updatePassword = async () => {
 </script>
 
 <template>
-  <div class="profile-page">
+  <div class="profile-page page-shell">
     <div class="page-header">
-      <h2>个人中心</h2>
+      <div>
+        <h2>个人中心</h2>
+        <p class="page-desc">资料、密码和常用入口分区展示，结构更清晰。</p>
+      </div>
     </div>
 
     <div class="profile-container">
-      <div class="sidebar">
+      <div class="sidebar panel-card">
         <div class="user-card">
            <el-avatar :size="80" :src="infoForm.avatar" />
            <div class="username">{{ authStore.user?.username }}</div>
@@ -113,10 +116,10 @@ const updatePassword = async () => {
         </el-menu>
       </div>
 
-      <div class="content-area">
+      <div class="content-area panel-card">
          <div v-if="activeTab === 'info'" class="tab-content">
             <h3>基本资料</h3>
-            <el-form label-width="80px" style="max-width: 500px">
+            <el-form label-width="96px" class="form-standard profile-form">
                 <el-form-item label="昵称">
                     <el-input v-model="infoForm.nickName" />
                 </el-form-item>
@@ -126,7 +129,7 @@ const updatePassword = async () => {
                 <el-form-item label="头像URL">
                      <el-input v-model="infoForm.avatar" placeholder="输入图片地址" />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item class="form-actions">
                     <el-button type="primary" :loading="loading" @click="updateInfo">保存修改</el-button>
                 </el-form-item>
             </el-form>
@@ -134,7 +137,7 @@ const updatePassword = async () => {
 
          <div v-if="activeTab === 'password'" class="tab-content">
             <h3>修改密码</h3>
-             <el-form label-width="100px" style="max-width: 500px">
+             <el-form label-width="96px" class="form-standard profile-form">
                 <el-form-item label="原密码">
                     <el-input v-model="pwdForm.oldPassword" type="password" show-password />
                 </el-form-item>
@@ -144,7 +147,7 @@ const updatePassword = async () => {
                 <el-form-item label="确认新密码">
                     <el-input v-model="pwdForm.confirmPassword" type="password" show-password />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item class="form-actions">
                     <el-button type="primary" @click="updatePassword">修改密码</el-button>
                 </el-form-item>
             </el-form>
@@ -155,37 +158,29 @@ const updatePassword = async () => {
 </template>
 
 <style scoped>
-.profile-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
 .profile-container {
   display: flex;
-  gap: 20px;
+  gap: 18px;
   min-height: 500px;
 }
 
 .sidebar {
   width: 250px;
-  background: white;
-  border-radius: 8px;
   padding: 20px 0;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
 
 .user-card {
   text-align: center;
   padding: 0 20px 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--ldk-border);
   margin-bottom: 10px;
 }
 
 .username {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   margin-top: 10px;
+  color: var(--ldk-text-primary);
 }
 
 .role-tag {
@@ -200,16 +195,32 @@ const updatePassword = async () => {
 
 .content-area {
   flex: 1;
-  background: white;
-  border-radius: 8px;
-  padding: 30px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  padding: 26px 28px;
+}
+
+.profile-form {
+  max-width: 520px;
 }
 
 .tab-content h3 {
   margin-top: 0;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ldk-border);
+  color: var(--ldk-text-primary);
+}
+
+@media (max-width: 900px) {
+  .profile-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .content-area {
+    padding: 18px 16px;
+  }
 }
 </style>

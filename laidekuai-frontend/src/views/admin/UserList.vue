@@ -53,12 +53,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="user-list-page">
+  <div class="user-list-page page-shell">
     <div class="page-header">
-      <h2>用户管理</h2>
+      <div>
+        <h2>用户管理</h2>
+        <p class="page-desc">用户状态、角色和注册信息统一按表格管理。</p>
+      </div>
     </div>
 
-    <div class="table-container" v-loading="loading">
+    <div class="table-container panel-card table-panel" v-loading="loading">
        <el-table :data="userList" border style="width: 100%">
            <el-table-column prop="id" label="ID" width="80" align="center" />
            <el-table-column prop="username" label="用户名" width="150" />
@@ -106,19 +109,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.user-list-page {
-    padding: 20px;
-}
-.page-header {
-    margin-bottom: 20px;
-}
 .table-container {
-    background: white;
-    padding: 20px;
-    border-radius: 4px;
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 .pagination-container {
-    margin-top: 20px;
-    text-align: right;
+    margin-top: 16px;
 }
 </style>

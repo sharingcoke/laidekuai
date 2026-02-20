@@ -115,13 +115,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="my-goods-page">
+  <div class="my-goods-page page-shell">
     <div class="page-header">
-         <h2>我发布的商品</h2>
-         <el-button type="primary" @click="router.push('/goods/publish')">发布新商品</el-button>
+      <div>
+        <h2>我发布的商品</h2>
+        <p class="page-desc">集中管理在售、待审与草稿商品，操作入口保持一致。</p>
+      </div>
+      <el-button type="primary" @click="router.push('/goods/publish')">发布新商品</el-button>
     </div>
 
-    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="goods-tabs">
+    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="goods-tabs panel-card tabs-panel">
         <el-tab-pane label="全部" name="all"></el-tab-pane>
         <el-tab-pane label="已上架" name="APPROVED"></el-tab-pane>
         <el-tab-pane label="待审核" name="PENDING"></el-tab-pane>
@@ -129,7 +132,7 @@ onMounted(() => {
         <el-tab-pane label="已下架" name="OFFLINE"></el-tab-pane>
     </el-tabs>
 
-    <div class="search-bar">
+    <div class="search-bar search-panel panel-card toolbar-panel">
         <CategorySelect
             v-model="queryParams.categoryId"
             class="category-select"
@@ -140,7 +143,7 @@ onMounted(() => {
         <el-button type="primary" @click="handleSearch">&#x641C;&#x7D22;</el-button>
     </div>
 
-    <div class="goods-table" v-loading="loading">
+    <div class="goods-table panel-card table-panel" v-loading="loading">
         <el-table :data="goodsList" style="width: 100%">
             <el-table-column label="商品信息" min-width="300">
                 <template #default="{ row }">
@@ -198,52 +201,49 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.my-goods-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+.goods-tabs {
+    margin-bottom: 16px;
 }
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.search-bar {
-    margin-bottom: 20px;
-    display: flex;
+
+.search-panel {
+    margin-bottom: 16px;
     gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
 }
 
 .category-select {
     min-width: 200px;
 }
+
+.goods-table {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
 .goods-info {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
 }
 .goods-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
     background: #f5f7fa;
 }
 .goods-title {
     font-size: 14px;
-    font-weight: bold;
-    color: #333;
+    font-weight: 600;
+    color: var(--ldk-text-primary);
     line-height: 1.4;
 }
 .goods-price {
-    color: #f56c6c;
+    color: var(--ldk-danger);
     margin-top: 5px;
+    font-weight: 600;
 }
 .reject-reason {
     font-size: 12px;
-    color: #f56c6c;
+    color: var(--ldk-danger);
     margin-top: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -251,7 +251,13 @@ onMounted(() => {
     max-width: 100px;
 }
 .pagination-container {
-    margin-top: 20px;
-    text-align: right;
+    margin-top: 18px;
+}
+
+@media (max-width: 768px) {
+  .goods-table {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }
 </style>

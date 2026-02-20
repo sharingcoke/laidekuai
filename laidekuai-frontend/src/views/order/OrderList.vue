@@ -8,6 +8,7 @@ const router = useRouter()
 const loading = ref(false)
 const orderList = ref([])
 const total = ref(0) // 总条数
+const activeTab = ref('all')
 
 const queryParams = reactive({
   page: 1,
@@ -154,12 +155,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="order-list-page">
+  <div class="order-list-page page-shell">
     <div class="page-header">
-      <h2>我的订单</h2>
+      <div>
+        <h2>我的订单</h2>
+        <p class="page-desc">按订单状态筛选，金额与操作区保持统一层级。</p>
+      </div>
     </div>
 
-    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs">
+    <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="order-tabs panel-card tabs-panel">
       <el-tab-pane label="全部订单" name="all"></el-tab-pane>
       <el-tab-pane label="待支付" name="PENDING_PAY"></el-tab-pane>
       <el-tab-pane label="待发货" name="PAID"></el-tab-pane>
@@ -224,35 +228,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.order-list-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
 .order-tabs {
-  margin-bottom: 20px;
-  background: white;
-  padding: 0 20px;
-  border-radius: 4px;
+  margin-bottom: 18px;
 }
 
 .order-item {
-  background: white;
-  border: 1px solid #eee;
-  margin-bottom: 20px;
-  border-radius: 4px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--ldk-border);
+  background: #fff;
+  box-shadow: var(--ldk-shadow-sm);
+  overflow: hidden;
 }
 
 .order-header {
-  padding: 10px 20px;
-  background: #fbfbfb;
-  border-bottom: 1px solid #eee;
+  padding: 12px 18px;
+  background: #f9fbff;
+  border-bottom: 1px solid var(--ldk-border);
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: #666;
-  gap: 20px;
+  font-size: 13px;
+  color: var(--ldk-text-secondary);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .status-tag {
@@ -260,9 +258,10 @@ onMounted(() => {
 }
 
 .order-body {
-  padding: 20px;
+  padding: 18px;
   display: flex;
   align-items: flex-start;
+  gap: 16px;
 }
 
 .order-goods-list {
@@ -272,14 +271,14 @@ onMounted(() => {
 .goods-item {
   display: flex;
   gap: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .goods-img {
   width: 80px;
   height: 80px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  border: 1px solid var(--ldk-border);
+  border-radius: 8px;
 }
 
 .goods-detail {
@@ -288,7 +287,8 @@ onMounted(() => {
 
 .goods-title {
   font-size: 14px;
-  color: #333;
+  color: var(--ldk-text-primary);
+  font-weight: 500;
   margin-bottom: 5px;
 }
 
@@ -298,17 +298,17 @@ onMounted(() => {
 }
 
 .order-payment {
-  width: 150px;
+  width: 170px;
   text-align: right;
-  border-left: 1px solid #eee;
+  border-left: 1px solid var(--ldk-border);
   padding-left: 20px;
-  margin-right: 20px;
+  margin-right: 8px;
 }
 
 .total {
   font-weight: bold;
-  font-size: 16px;
-  color: #333;
+  font-size: 18px;
+  color: var(--ldk-text-primary);
 }
 
 .shipping {
@@ -318,15 +318,38 @@ onMounted(() => {
 }
 
 .order-actions {
-  width: 120px;
+  width: 132px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
 .pagination-container {
-  text-align: center;
-  margin-top: 20px;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .order-body {
+    flex-direction: column;
+  }
+
+  .order-payment {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--ldk-border);
+    padding-left: 0;
+    padding-top: 12px;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  .order-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }
 </style>

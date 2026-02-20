@@ -151,13 +151,16 @@ const saveAddress = async () => {
 </script>
 
 <template>
-  <div class="order-confirm-page">
+  <div class="order-confirm-page page-shell">
     <div class="page-header">
-      <h2>确认订单</h2>
+      <div>
+        <h2>确认订单</h2>
+        <p class="page-desc">确认地址与商品后提交，信息展示按模块分区。</p>
+      </div>
     </div>
 
     <!-- 1. 收货地址 -->
-    <div class="section-card">
+    <div class="section-card panel-card">
       <div class="section-header">
         <h3>收货地址</h3>
         <el-button type="primary" link @click="showAddAddress">新增地址</el-button>
@@ -180,7 +183,7 @@ const saveAddress = async () => {
     </div>
 
     <!-- 2. 商品清单 -->
-    <div class="section-card">
+    <div class="section-card panel-card">
       <div class="section-header">
         <h3>商品清单</h3>
       </div>
@@ -206,7 +209,7 @@ const saveAddress = async () => {
     </div>
 
     <!-- 3. 底部结算 -->
-    <div class="confirm-bar">
+    <div class="confirm-bar panel-card">
       <div class="price-info">
         <span class="label">应付金额：</span>
         <span class="total-price">¥ {{ totalPrice.toFixed(2) }}</span>
@@ -216,7 +219,7 @@ const saveAddress = async () => {
 
     <!-- 地址弹窗 -->
     <el-dialog v-model="addressDialogVisible" title="新增收货地址" width="500px">
-      <el-form :model="addressForm" label-width="80px">
+      <el-form :model="addressForm" label-width="96px" class="form-standard dialog-form">
         <el-form-item label="收货人">
           <el-input v-model="addressForm.receiverName" placeholder="姓名" />
         </el-form-item>
@@ -250,37 +253,25 @@ const saveAddress = async () => {
 </template>
 
 <style scoped>
-.order-confirm-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-}
 
 .section-card {
-  background: white;
   padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 18px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--ldk-border);
+  padding-bottom: 12px;
 }
 
 .section-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #333;
+  color: var(--ldk-text-primary);
 }
 
 .address-list {
@@ -290,26 +281,28 @@ const saveAddress = async () => {
 }
 
 .address-item {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--ldk-border);
+  border-radius: 10px;
   padding: 15px;
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
+  min-height: 112px;
 }
 
 .address-item:hover {
-  border-color: #c0c4cc;
+  border-color: #c5d1e4;
 }
 
 .address-item.active {
-  border-color: #409eff;
-  background-color: #f0f9eb;
+  border-color: var(--ldk-primary);
+  background-color: var(--ldk-primary-soft);
 }
 
 .addr-name {
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 8px;
+  color: var(--ldk-text-primary);
 }
 
 .phone {
@@ -319,8 +312,8 @@ const saveAddress = async () => {
 
 .addr-detail {
   font-size: 14px;
-  color: #606266;
-  line-height: 1.4;
+  color: var(--ldk-text-regular);
+  line-height: 1.5;
 }
 
 .default-tag {
@@ -335,21 +328,19 @@ const saveAddress = async () => {
 }
 
 .subtotal {
-  color: #f56c6c;
+  color: var(--ldk-danger);
   font-weight: bold;
 }
 
 .confirm-bar {
-  background: white;
-  padding: 20px;
+  padding: 14px 18px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 20px;
   position: sticky;
-  bottom: 0;
-  box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
-  border-top: 1px solid #eee;
+  bottom: 10px;
+  z-index: 20;
 }
 
 .price-info {
@@ -363,8 +354,20 @@ const saveAddress = async () => {
 
 .total-price {
   font-size: 32px;
-  color: #f56c6c;
+  color: var(--ldk-danger);
   font-weight: bold;
   margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+  .confirm-bar {
+    position: static;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .total-price {
+    font-size: 28px;
+  }
 }
 </style>
