@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import goodsApi from '@/api/goods'
+import CategorySelect from '@/components/common/CategorySelect.vue'
 import { Search } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -10,7 +11,8 @@ const router = useRouter()
 const queryParams = reactive({
   page: 1,
   size: 12,
-  keyword: ''
+  keyword: '',
+  categoryId: null
 })
 
 const loading = ref(false)
@@ -39,6 +41,14 @@ const fetchGoods = async () => {
  * 搜索
  */
 const handleSearch = () => {
+  queryParams.page = 1
+  fetchGoods()
+}
+
+/**
+ * ????
+ */
+const handleCategoryChange = () => {
   queryParams.page = 1
   fetchGoods()
 }
@@ -86,9 +96,15 @@ onMounted(() => {
 <template>
   <div class="goods-list-page">
     <div class="search-bar">
+      <CategorySelect
+        v-model="queryParams.categoryId"
+        class="category-select"
+        placeholder="????"
+        @change="handleCategoryChange"
+      />
       <el-input
         v-model="queryParams.keyword"
-        placeholder="搜索商品..."
+        placeholder="????..."
         class="search-input"
         size="large"
         clearable
@@ -163,6 +179,13 @@ onMounted(() => {
   margin-bottom: 30px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.category-select {
+  min-width: 200px;
 }
 
 .search-input {

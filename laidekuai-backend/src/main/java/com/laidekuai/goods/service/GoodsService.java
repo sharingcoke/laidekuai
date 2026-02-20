@@ -49,7 +49,7 @@ public interface GoodsService {
      * @param goodsId 商品ID
      * @return 商品详情
      */
-    Result<Goods> getGoodsDetail(Long goodsId);
+    Result<Goods> getGoodsDetail(Long goodsId, Long currentUserId, boolean isAdmin);
 
     /**
      * 商品列表/搜索

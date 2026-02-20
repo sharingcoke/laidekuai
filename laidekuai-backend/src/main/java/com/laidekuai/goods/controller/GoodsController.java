@@ -74,7 +74,7 @@ public class GoodsController {
      */
     @GetMapping("/{id}")
     public Result<Goods> getGoodsDetail(@PathVariable Long id) {
-        return goodsService.getGoodsDetail(id);
+        return goodsService.getGoodsDetail(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin());
     }
 
     /**

@@ -15,4 +15,18 @@ laidekuai-frontend/dist/
 # Logs
 *.log
 
+# Runtime
+uploads/
+laidekuai-backend/run_log*.txt
+laidekuai-backend/compile_error.txt
+laidekuai-backend/error.txt
+
 .claude/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

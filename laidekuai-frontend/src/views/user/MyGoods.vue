@@ -3,6 +3,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import goodsApi from '@/api/goods'
+import CategorySelect from '@/components/common/CategorySelect.vue'
 import { Edit, Delete, View, VideoPause, Position } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -15,7 +16,8 @@ const queryParams = reactive({
   page: 1,
   size: 10,
   keyword: '',
-  status: ''
+  status: '',
+  categoryId: null
 })
 
 const fetchMyGoods = async () => {
@@ -36,10 +38,17 @@ const fetchMyGoods = async () => {
 const handleTabClick = (tab) => {
   queryParams.status = tab.props.name === 'all' ? '' : tab.props.name
   queryParams.page = 1
+  queryParams.keyword = ''
+  queryParams.categoryId = null
   fetchMyGoods()
 }
 
 const handleSearch = () => {
+    queryParams.page = 1
+    fetchMyGoods()
+}
+
+const handleCategoryChange = () => {
     queryParams.page = 1
     fetchMyGoods()
 }
@@ -121,8 +130,14 @@ onMounted(() => {
     </el-tabs>
 
     <div class="search-bar">
-        <el-input v-model="queryParams.keyword" placeholder="搜索商品标题" style="width: 300px" clearable @keyup.enter="handleSearch" />
-        <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <CategorySelect
+            v-model="queryParams.categoryId"
+            class="category-select"
+            placeholder="&#x9009;&#x62E9;&#x5206;&#x7C7B;"
+            @change="handleCategoryChange"
+        />
+        <el-input v-model="queryParams.keyword" placeholder="&#x641C;&#x7D22;&#x5546;&#x54C1;&#x6807;&#x9898;" style="width: 300px" clearable @keyup.enter="handleSearch" />
+        <el-button type="primary" @click="handleSearch">&#x641C;&#x7D22;</el-button>
     </div>
 
     <div class="goods-table" v-loading="loading">
@@ -198,6 +213,12 @@ onMounted(() => {
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.category-select {
+    min-width: 200px;
 }
 .goods-info {
     display: flex;

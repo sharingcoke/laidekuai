@@ -2,6 +2,7 @@ package com.laidekuai.goods.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.goods.dto.GoodsCreateRequest;
 import com.laidekuai.goods.dto.GoodsSearchRequest;
@@ -190,7 +191,7 @@ class GoodsServiceTest {
         when(goodsMapper.selectById(1L)).thenReturn(testGoods);
 
         // When
-        var result = goodsService.getGoodsDetail(1L);
+        var result = goodsService.getGoodsDetail(1L, null, false);
 
         // Then
         assertTrue(result.isSuccess());
@@ -203,10 +204,52 @@ class GoodsServiceTest {
         when(goodsMapper.selectById(1L)).thenReturn(null);
 
         // When
-        var result = goodsService.getGoodsDetail(1L);
+        var result = goodsService.getGoodsDetail(1L, null, false);
 
         // Then
         assertFalse(result.isSuccess());
+    }
+
+    @Test
+    void testGetGoodsDetail_PrivateGoodsForbiddenForOtherUser() {
+        // Given
+        testGoods.setStatus(GoodsStatus.DRAFT);
+        when(goodsMapper.selectById(1L)).thenReturn(testGoods);
+
+        // When
+        var result = goodsService.getGoodsDetail(1L, 999L, false);
+
+        // Then
+        assertFalse(result.isSuccess());
+        assertEquals(ErrorCode.FORBIDDEN.getCode(), result.getCode());
+    }
+
+    @Test
+    void testGetGoodsDetail_PrivateGoodsVisibleForOwner() {
+        // Given
+        testGoods.setStatus(GoodsStatus.DRAFT);
+        when(goodsMapper.selectById(1L)).thenReturn(testGoods);
+
+        // When
+        var result = goodsService.getGoodsDetail(1L, 100L, false);
+
+        // Then
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getData());
+    }
+
+    @Test
+    void testGetGoodsDetail_PrivateGoodsVisibleForAdmin() {
+        // Given
+        testGoods.setStatus(GoodsStatus.PENDING);
+        when(goodsMapper.selectById(1L)).thenReturn(testGoods);
+
+        // When
+        var result = goodsService.getGoodsDetail(1L, 999L, true);
+
+        // Then
+        assertTrue(result.isSuccess());
+        assertNotNull(result.getData());
     }
 
     @Test

@@ -3,7 +3,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import goodsApi from '@/api/goods'
-import fileApi from '@/api/file' // 需要创建file.js
+import CategorySelect from '@/components/common/CategorySelect.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -15,24 +15,15 @@ const goodsId = route.params.id
 const form = reactive({
     title: '',
     subTitle: '',
-    categoryId: null, // V1暂无分类列表API，可先写死或填数字
+    categoryId: null,
     price: 0,
     stock: 1,
     detail: '',
     imageUrls: []
 })
 
-// TODO: 分类列表应当从API获取
-const categories = [
-    { id: 101, name: '数码产品' },
-    { id: 102, name: '书籍资料' },
-    { id: 103, name: '生活用品' },
-    { id: 104, name: '服装鞋包' },
-    { id: 105, name: '其他' }
-]
-
 const uploadHeaders = ref({
-    Authorization: `Bearer ${localStorage.getItem('token')}`
+    Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ""
 })
 
 const fetchDetail = async () => {
@@ -84,7 +75,7 @@ const handleRemove = (uploadFile, uploadFiles) => {
 }
 
 const handleSubmit = async () => {
-    if (!form.title || !form.price || !form.stock) {
+    if (!form.title || !form.price || !form.stock || !form.categoryId) {
         ElMessage.warning('请填写必填项')
         return
     }
@@ -147,9 +138,7 @@ const handleSubmit = async () => {
             </el-form-item>
 
             <el-form-item label="商品分类" required>
-                <el-select v-model="form.categoryId" placeholder="请选择分类">
-                    <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
-                </el-select>
+                <CategorySelect v-model="form.categoryId" />
             </el-form-item>
 
             <el-form-item label="价格" required>

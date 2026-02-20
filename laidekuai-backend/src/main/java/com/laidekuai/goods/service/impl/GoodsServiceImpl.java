@@ -174,21 +174,21 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     @Override
-    public Result<Goods> getGoodsDetail(Long goodsId) {
+    public Result<Goods> getGoodsDetail(Long goodsId, Long currentUserId, boolean isAdmin) {
         log.info("获取商品详情，商品ID: {}", goodsId);
 
-        // 1. 查询商品
         Goods goods = goodsMapper.selectById(goodsId);
         if (goods == null) {
             log.warn("商品不存在: {}", goodsId);
             return Result.error(ErrorCode.GOODS_NOT_FOUND);
         }
 
-        // 2. 只返回已上架的商品
-        if (goods.getStatus() != GoodsStatus.APPROVED) {
-            log.warn("商品未上架，商品ID: {}, 状态: {}", goodsId, goods.getStatus());
-            // 对于非买家（卖家或管理员），可以查看自己的商品或待审核的商品
-            // 这里简化处理，返回商品详情但前端根据状态判断
+        if (goods.getStatus() != GoodsStatus.APPROVED
+                && !isAdmin
+                && (currentUserId == null || !currentUserId.equals(goods.getSellerId()))) {
+            log.warn("无权查看非公开商品，商品ID: {}, 状态: {}, 当前用户: {}, isAdmin: {}",
+                    goodsId, goods.getStatus(), currentUserId, isAdmin);
+            return Result.error(ErrorCode.FORBIDDEN);
         }
 
         return Result.success(goods);

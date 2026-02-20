@@ -25,11 +25,10 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (res.code === 0) {
       // 后端返回 { accessToken, tokenType, expiresIn, user }
-      const bearer = `${res.data.tokenType || 'Bearer'} ${res.data.accessToken}`
-      token.value = bearer
+      token.value = res.data.accessToken
       user.value = res.data.user
 
-      localStorage.setItem('token', bearer)
+      localStorage.setItem('token', res.data.accessToken)
       localStorage.setItem('user', JSON.stringify(res.data.user))
 
       return true
