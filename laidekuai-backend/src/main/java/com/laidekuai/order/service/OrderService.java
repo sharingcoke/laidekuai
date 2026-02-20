@@ -173,7 +173,7 @@ public interface OrderService {
      * @param adminId 当前用户ID（管理员）
      * @return 处理结果
      */
-    Result<Void> rejectRefundByAdmin(Long orderId, Long adminId);
+    Result<Void> rejectRefundByAdmin(Long orderId, Long adminId, String remark);
     /**
      * 系统自动取消超时订单
      *

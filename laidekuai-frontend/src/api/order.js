@@ -155,10 +155,11 @@ export default {
     /**
      * 管理员退款驳回
      */
-    rejectRefundByAdmin(id) {
+    rejectRefundByAdmin(id, remark) {
         return request({
             url: `/admin/orders/${id}/refund/reject`,
-            method: 'post'
+            method: 'post',
+            params: remark ? { remark } : undefined
         })
     }
 }

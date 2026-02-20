@@ -96,7 +96,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="refund-audit-page">
+  <div class="refund-audit-page page-shell">
     <div class="page-header">
       <div>
         <h2>退款审核</h2>
@@ -123,7 +123,7 @@ onMounted(() => {
     </el-card>
 
     <el-card class="table-card" shadow="never">
-      <div class="table-container" v-loading="loading">
+      <div class="table-container table-panel" v-loading="loading">
         <el-table
           :data="orderList"
           style="width: 100%"
@@ -142,8 +142,11 @@ onMounted(() => {
             </template>
           </el-table-column>
           <el-table-column prop="createdAt" label="创建时间" width="180" />
-          <el-table-column label="操作" width="180" fixed="right">
+          <el-table-column label="操作" width="240" fixed="right">
             <template #default="{ row }">
+              <el-button size="small" @click="$router.push(`/admin/refunds/${row.id}`)">
+                查看
+              </el-button>
               <el-button
                 type="success"
                 size="small"
@@ -180,35 +183,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.refund-audit-page {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.page-desc {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: #909399;
-}
-
-.filter-card {
-  margin-bottom: 16px;
-  border-radius: 8px;
-}
-
 .filter-form {
   display: flex;
   flex-wrap: wrap;
@@ -226,16 +200,7 @@ onMounted(() => {
   gap: 8px;
 }
 
-.table-card {
-  border-radius: 8px;
-}
-
-.table-container {
-  padding: 6px 0 0;
-}
-
 .pagination-container {
-  margin-top: 20px;
-  text-align: right;
+  margin-top: 16px;
 }
 </style>

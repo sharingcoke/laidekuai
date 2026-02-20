@@ -58,8 +58,9 @@ public class AdminOrderController {
      */
     @PostMapping("/{id}/refund/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public Result<Void> rejectRefund(@PathVariable("id") Long orderId) {
+    public Result<Void> rejectRefund(@PathVariable("id") Long orderId,
+                                     @RequestParam(value = "remark", required = false) String remark) {
         Long adminId = SecurityUtils.getCurrentUserId();
-        return orderService.rejectRefundByAdmin(orderId, adminId);
+        return orderService.rejectRefundByAdmin(orderId, adminId, remark);
     }
 }

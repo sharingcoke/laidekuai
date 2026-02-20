@@ -621,8 +621,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Void> rejectRefundByAdmin(Long orderId, Long adminId) {
-        log.info("管理员 {} 驳回退款，订单 {}", adminId, orderId);
+    public Result<Void> rejectRefundByAdmin(Long orderId, Long adminId, String remark) {
+        log.info("管理员 {} 驳回退款，订单 {}, 备注: {}", adminId, orderId, remark);
 
         Order order = orderMapper.selectById(orderId);
         if (order == null || order.getDeleted() == 1) {
