@@ -5,6 +5,49 @@ import request from '@/utils/request'
  */
 export default {
     /**
+     * 创建评价
+     */
+    create(data) {
+        return request({
+            url: '/reviews',
+            method: 'post',
+            data
+        })
+    },
+
+    /**
+     * 我的评价列表
+     */
+    listMy(params) {
+        return request({
+            url: '/reviews/my',
+            method: 'get',
+            params
+        })
+    },
+
+    /**
+     * 商品评价列表
+     */
+    listGoods(goodsId, params) {
+        return request({
+            url: `/reviews/goods/${goodsId}`,
+            method: 'get',
+            params
+        })
+    },
+
+    /**
+     * 商品评分
+     */
+    getGoodsRating(goodsId) {
+        return request({
+            url: `/reviews/goods/${goodsId}/rating`,
+            method: 'get'
+        })
+    },
+
+    /**
      * 管理员评价列表
      */
     listAdmin(params) {

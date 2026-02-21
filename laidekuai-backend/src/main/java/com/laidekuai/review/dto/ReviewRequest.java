@@ -17,14 +17,9 @@ import java.util.List;
 public class ReviewRequest {
 
     /**
-     * 订单ID
-     */
-    @NotNull(message = "订单ID不能为空")
-    private Long orderId;
-
-    /**
      * 订单项ID（如需单独评价单个商品）
      */
+    @NotNull(message = "订单项ID不能为空")
     private Long orderItemId;
 
     /**
@@ -44,7 +39,6 @@ public class ReviewRequest {
     /**
      * 评价图片列表
      */
-    @Size(max = 5, message = "最多上传5张图片")
     private List<String> images;
 
     /**

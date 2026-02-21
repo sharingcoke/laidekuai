@@ -19,13 +19,17 @@ public class OrderDTO {
     private Long id;
     private String orderNo;
     private Long buyerId;
+    private String buyerName;
     private Long sellerId;
+    private String sellerName;
     private BigDecimal totalAmount;
     private BigDecimal shippingFee;
     private String status;
     private String refundReason;
     private String remark;
+    private Integer refundRequestCount;
     private LocalDateTime payTime;
+    private LocalDateTime disputeTime;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
@@ -47,7 +51,9 @@ public class OrderDTO {
         dto.setStatus(order.getStatus());
         dto.setRefundReason(order.getRefundReason());
         dto.setRemark(order.getRemark());
+        dto.setRefundRequestCount(order.getRefundRequestCount());
         dto.setPayTime(order.getPayTime());
+        dto.setDisputeTime(order.getDisputeTime());
         dto.setReceiverName(order.getReceiverName());
         dto.setReceiverPhone(order.getReceiverPhone());
         dto.setReceiverAddress(order.getReceiverAddress());

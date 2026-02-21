@@ -19,6 +19,8 @@ import com.laidekuai.order.entity.OrderItem;
 import com.laidekuai.order.mapper.OrderItemMapper;
 import com.laidekuai.order.mapper.OrderMapper;
 import com.laidekuai.order.service.OrderService;
+import com.laidekuai.user.entity.User;
+import com.laidekuai.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private final GoodsMapper goodsMapper;
     private final AddressMapper addressMapper;
     private final OrderNoGenerator orderNoGenerator;
+    private final UserMapper userMapper;
 
     /**
      * 娲昏穬璁㈠崟鏁颁笂闄?
@@ -265,7 +268,27 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
-        return Result.success(OrderDTO.fromOrder(order, items));
+        OrderDTO dto = OrderDTO.fromOrder(order, items);
+        dto.setBuyerName(resolveUserName(order.getBuyerId()));
+        dto.setSellerName(resolveUserName(order.getSellerId()));
+        return Result.success(dto);
+    }
+
+    private String resolveUserName(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return "用户" + userId;
+        }
+        if (StringUtils.hasText(user.getNickName())) {
+            return user.getNickName();
+        }
+        if (StringUtils.hasText(user.getUsername())) {
+            return user.getUsername();
+        }
+        return "用户" + userId;
     }
 
     @Override

@@ -27,6 +27,7 @@ public class ReviewDTO {
     private String content;
     private List<String> images;
     private Boolean isAnonymous;
+    private Boolean isRefunded;
     private String reply;
     private LocalDateTime replyTime;
     private LocalDateTime createdAt;
@@ -47,6 +48,7 @@ public class ReviewDTO {
         dto.setRating(review.getRating());
         dto.setContent(review.getContent());
         dto.setIsAnonymous(review.getIsAnonymous() == 1);
+        dto.setIsRefunded(review.getIsRefunded() != null && review.getIsRefunded() == 1);
         dto.setReply(review.getReply());
         dto.setReplyTime(review.getReplyTime());
         dto.setCreatedAt(review.getCreatedAt());

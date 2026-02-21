@@ -108,6 +108,20 @@ const handleRefund = (orderId) => {
    }
 }
 
+const canReview = (order) => {
+  return order.status === 'COMPLETED' || order.status === 'REFUNDED'
+}
+
+const goReview = (order, item) => {
+  router.push({
+    path: '/reviews/new',
+    query: {
+      orderId: order.id,
+      orderItemId: item.id
+    }
+  })
+}
+
 const formatStatus = (status) => {
   const map = {
     'PENDING_PAY': '待支付',
@@ -182,6 +196,9 @@ onMounted(() => {
                         <div class="goods-title">{{ item.goodsTitle }}</div>
                         <div class="goods-price">¥ {{ item.price }} x {{ item.quantity }}</div>
                     </div>
+                    <div class="goods-actions" v-if="canReview(order)">
+                        <el-button type="info" size="small" plain @click="goReview(order, item)">评价</el-button>
+                    </div>
                 </div>
             </div>
             
@@ -198,8 +215,7 @@ onMounted(() => {
                 
                 <el-button v-if="order.status === 'PAID'" size="small" @click="handleRefund(order.id)">申请退款</el-button>
 
-                <!-- REVIEW按钮 (COMPLETED) -->
-                <el-button v-if="order.status === 'COMPLETED'" type="info" size="small" plain>评价</el-button>
+                <!-- REVIEW按钮移动到订单项内 -->
             </div>
         </div>
       </div>
@@ -250,6 +266,11 @@ onMounted(() => {
 
 .goods-detail {
   flex: 1;
+}
+
+.goods-actions {
+  display: flex;
+  align-items: center;
 }
 
 .goods-title {

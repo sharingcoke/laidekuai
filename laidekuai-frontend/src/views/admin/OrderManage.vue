@@ -1,8 +1,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import orderApi from '@/api/order'
 
+const router = useRouter()
 const loading = ref(false)
 const orderList = ref([])
 const total = ref(0)
@@ -84,6 +86,10 @@ const handleReset = () => {
 const handleCurrentChange = (page) => {
   queryParams.page = page
   fetchOrders()
+}
+
+const goDetail = (orderId) => {
+  router.push(`/admin/orders/${orderId}`)
 }
 
 const openShipDialog = (item) => {
@@ -193,7 +199,7 @@ onMounted(() => {
     </el-card>
 
     <el-card class="table-card" shadow="never">
-      <div class="table-container" v-loading="loading">
+      <div class="table-container table-panel" v-loading="loading">
         <el-table
           :data="orderList"
           style="width: 100%"
@@ -237,6 +243,11 @@ onMounted(() => {
             </template>
           </el-table-column>
           <el-table-column prop="createdAt" label="创建时间" width="180" />
+          <el-table-column label="操作" width="120" fixed="right">
+            <template #default="{ row }">
+              <el-button size="small" @click="goDetail(row.id)">查看详情</el-button>
+            </template>
+          </el-table-column>
         </el-table>
 
         <div class="pagination-container" v-if="total > 0">
@@ -274,10 +285,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-card {
-  margin-bottom: 16px;
-}
-
 .filter-form {
   display: flex;
   flex-wrap: wrap;
@@ -295,17 +302,9 @@ onMounted(() => {
   gap: 8px;
 }
 
-.table-card {
-  margin-bottom: 0;
-}
-
-.table-container {
-  padding: 6px 0 0;
-}
-
 .item-list {
   padding: 8px 12px;
-  background: #f8faff;
+  background: var(--ldk-surface-soft);
   border-radius: 10px;
 }
 
@@ -315,7 +314,7 @@ onMounted(() => {
   gap: 16px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px dashed #e5e7eb;
+  border-bottom: 1px dashed var(--ldk-border);
 }
 
 .item-row:last-child {
@@ -328,13 +327,13 @@ onMounted(() => {
 
 .item-info .title {
   font-size: 14px;
-  color: #333;
+  color: var(--ldk-text-primary);
   margin-bottom: 4px;
 }
 
 .item-info .meta {
   font-size: 12px;
-  color: #999;
+  color: var(--ldk-text-secondary);
 }
 
 .item-status {

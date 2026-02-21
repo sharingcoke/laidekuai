@@ -69,6 +69,11 @@ public class Review {
     private Integer isAnonymous;
 
     /**
+     * 是否退款评价
+     */
+    private Integer isRefunded;
+
+    /**
      * 卖家回复内容
      */
     private String reply;

@@ -14,6 +14,7 @@
         <result column="content" property="content"/>
         <result column="images" property="images"/>
         <result column="is_anonymous" property="isAnonymous"/>
+        <result column="is_refunded" property="isRefunded"/>
         <result column="reply" property="reply"/>
         <result column="reply_time" property="replyTime"/>
         <result column="status" property="status"/>
@@ -25,7 +26,7 @@
     <!-- 基础字段 -->
     <sql id="Base_Column_List">
         id, order_id, order_item_id, goods_id, buyer_id, seller_id, rating, content,
-        images, is_anonymous, reply, reply_time, status, created_at, updated_at, deleted
+        images, is_anonymous, is_refunded, reply, reply_time, status, created_at, updated_at, deleted
     </sql>
 
     <!-- 查询商品评价列表 -->
@@ -60,6 +61,7 @@
         WHERE goods_id = #{goodsId}
           AND deleted = 0
           AND status = 'visible'
+          AND is_refunded = 0
     </select>
 
 </mapper>

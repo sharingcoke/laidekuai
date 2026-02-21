@@ -66,6 +66,18 @@ const routes = [
     meta: { title: '我的订单 - 来得快', requiresAuth: true }
   },
   {
+    path: '/reviews/my',
+    name: 'MyReviews',
+    component: () => import('@/views/review/ReviewList.vue'),
+    meta: { title: '我的评价 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/reviews/new',
+    name: 'ReviewForm',
+    component: () => import('@/views/review/ReviewForm.vue'),
+    meta: { title: '创建评价 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/user/Profile.vue'),
@@ -132,10 +144,22 @@ const routes = [
     meta: { title: '订单管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/orders/:id',
+    name: 'AdminOrderDetail',
+    component: () => import('@/views/admin/OrderDetail.vue'),
+    meta: { title: '管理员订单详情 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
     path: '/admin/refunds',
     name: 'AdminRefunds',
     component: () => import('@/views/admin/RefundAudit.vue'),
     meta: { title: '退款审核 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/audit-logs',
+    name: 'AdminAuditLogs',
+    component: () => import('@/views/admin/AuditLog.vue'),
+    meta: { title: '审计日志 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/admin/refunds/:id',
@@ -148,6 +172,12 @@ const routes = [
     name: 'SellerOrders',
     component: () => import('@/views/seller/SalesOrders.vue'),
     meta: { title: '卖家订单 - 来得快', requiresAuth: true, requiresSeller: true }
+  },
+  {
+    path: '/seller/orders/:id',
+    name: 'SellerOrderDetail',
+    component: () => import('@/views/seller/OrderDetail.vue'),
+    meta: { title: '卖家订单详情 - 来得快', requiresAuth: true, requiresSeller: true }
   }
 ]
 

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.common.util.SecurityUtils;
 import com.laidekuai.goods.entity.Goods;
 import com.laidekuai.goods.mapper.GoodsMapper;
 import com.laidekuai.order.entity.Order;
@@ -47,40 +48,56 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<ReviewDTO> createReview(ReviewRequest request, Long userId) {
-        log.info("用户 {} 评价订单 {}", userId, request.getOrderId());
+        log.info("用户 {} 评价订单项 {}", userId, request.getOrderItemId());
 
-        // 1. 校验订单
-        Order order = orderMapper.selectById(request.getOrderId());
+        boolean isAdmin = SecurityUtils.isAdmin();
+
+        // 1. 校验订单项
+        OrderItem item = orderItemMapper.selectById(request.getOrderItemId());
+        if (item == null || item.getDeleted() == 1) {
+            return Result.error(ErrorCode.BAD_REQUEST.getCode(), "订单项不存在");
+        }
+
+        // 2. 校验订单
+        Order order = orderMapper.selectById(item.getOrderId());
         if (order == null || order.getDeleted() == 1) {
             return Result.error(ErrorCode.ORDER_NOT_FOUND);
         }
-        // 只有买家可以评价
-        if (!order.getBuyerId().equals(userId)) {
+
+        // 只有买家可以评价（管理员可跳过）
+        if (!isAdmin && !order.getBuyerId().equals(userId)) {
             return Result.error(ErrorCode.FORBIDDEN);
         }
-        // 只有已完成的订单才能评价
-        if (!"COMPLETED".equals(order.getStatus())) {
-            return Result.error(40501, "只有已完成的订单才能评价");
-        }
-        // 检查是否已评价
-        if (reviewMapper.countByOrderId(request.getOrderId()) > 0) {
-            return Result.error(40502, "该订单已评价");
+
+        // 只有已完成/已退款订单才能评价
+        if (!"COMPLETED".equals(order.getStatus()) && !"REFUNDED".equals(order.getStatus())) {
+            return Result.error(ErrorCode.ORDER_STATUS_ERROR);
         }
 
-        // 2. 获取订单项信息
-        List<OrderItem> items = orderItemMapper.selectByOrderId(request.getOrderId());
-        if (items.isEmpty()) {
-            return Result.error(40503, "订单项不存在");
+        // 订单完成/退款 30 天内可评价（管理员不受限制）
+        if (!isAdmin) {
+            LocalDateTime baseTime = resolveReviewBaseTime(order);
+            if (baseTime != null && baseTime.plusDays(30).isBefore(LocalDateTime.now())) {
+                return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), "超过评价时限（30天）");
+            }
         }
 
-        // 3. 创建评价（为每个订单项创建评价）
+        // 订单项唯一评价约束
+        if (reviewMapper.countByOrderItemId(item.getId()) > 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        // 3. 创建评价
         Review review = new Review();
         review.setOrderId(order.getId());
-        review.setBuyerId(userId);
-        review.setSellerId(order.getSellerId());
+        review.setOrderItemId(item.getId());
+        review.setGoodsId(item.getGoodsId());
+        review.setBuyerId(order.getBuyerId());
+        review.setSellerId(item.getSellerId());
         review.setRating(request.getRating());
         review.setContent(request.getContent());
         review.setIsAnonymous(request.getIsAnonymous() != null && request.getIsAnonymous() ? 1 : 0);
+        review.setIsRefunded("REFUNDED".equals(order.getStatus()) ? 1 : 0);
         review.setStatus("visible");
         review.setCreatedAt(LocalDateTime.now());
 
@@ -89,19 +106,19 @@ public class ReviewServiceImpl implements ReviewService {
             review.setImages("[\"" + String.join("\",\"", request.getImages()) + "\"]");
         }
 
-        // 使用第一个订单项的商品信息
-        OrderItem firstItem = items.get(0);
-        review.setOrderItemId(firstItem.getId());
-        review.setGoodsId(firstItem.getGoodsId());
-
         reviewMapper.insert(review);
         log.info("评价创建成功, ID: {}", review.getId());
 
         // 获取用户昵称
-        User user = userMapper.selectById(userId);
+        User user = userMapper.selectById(order.getBuyerId());
         String nickname = user != null ? user.getNickName() : null;
+        ReviewDTO dto = ReviewDTO.fromReview(review, nickname);
+        Goods goods = goodsMapper.selectById(item.getGoodsId());
+        if (goods != null) {
+            dto.setGoodsTitle(goods.getTitle());
+        }
 
-        return Result.success(ReviewDTO.fromReview(review, nickname));
+        return Result.success(dto);
     }
 
     @Override
@@ -185,7 +202,12 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(review -> {
                     User user = userMapper.selectById(review.getBuyerId());
                     String nickname = user != null ? user.getNickName() : null;
-                    return ReviewDTO.fromReview(review, nickname);
+                    ReviewDTO dto = ReviewDTO.fromReview(review, nickname);
+                    Goods goods = goodsMapper.selectById(review.getGoodsId());
+                    if (goods != null) {
+                        dto.setGoodsTitle(goods.getTitle());
+                    }
+                    return dto;
                 })
                 .collect(Collectors.toList());
 
@@ -229,6 +251,28 @@ public class ReviewServiceImpl implements ReviewService {
         pageResult.setSize(result.getSize());
 
         return Result.success(pageResult);
+    }
+
+    private LocalDateTime resolveReviewBaseTime(Order order) {
+        if ("COMPLETED".equals(order.getStatus())) {
+            if (order.getSettledTime() != null) {
+                return order.getSettledTime();
+            }
+            if (order.getUpdatedAt() != null) {
+                return order.getUpdatedAt();
+            }
+            return order.getCreatedAt();
+        }
+        if ("REFUNDED".equals(order.getStatus())) {
+            if (order.getCancelTime() != null) {
+                return order.getCancelTime();
+            }
+            if (order.getUpdatedAt() != null) {
+                return order.getUpdatedAt();
+            }
+            return order.getCreatedAt();
+        }
+        return null;
     }
 
     @Override

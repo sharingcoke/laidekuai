@@ -1,8 +1,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import orderApi from '@/api/order'
 
+const router = useRouter()
 const loading = ref(false)
 const orderList = ref([])
 const total = ref(0)
@@ -74,6 +76,10 @@ const submitShip = async () => {
   }
 }
 
+const goDetail = (orderId) => {
+  router.push(`/seller/orders/${orderId}`)
+}
+
 const formatOrderStatus = (status) => {
   const map = {
     'PENDING_PAY': '待支付',
@@ -95,7 +101,9 @@ const formatItemStatus = (status) => {
     'SHIPPED': '已发货',
     'COMPLETED': '已完成',
     'CANCELED': '已取消',
-    'REFUNDED': '已退款'
+    'REFUNDING': '退款中',
+    'REFUNDED': '已退款',
+    'DISPUTED': '争议中'
   }
   return map[status] || status
 }
@@ -121,14 +129,17 @@ onMounted(() => {
       <el-tab-pane label="已完成" name="COMPLETED"></el-tab-pane>
     </el-tabs>
 
-    <div class="order-list" v-loading="loading">
+    <div class="order-list stagger-enter" v-loading="loading">
       <el-empty v-if="!loading && orderList.length === 0" description="暂无订单" />
 
-      <div v-else class="order-item" v-for="order in orderList" :key="order.id">
-        <div class="order-header">
+      <div v-else class="order-item list-item-card" v-for="order in orderList" :key="order.id">
+        <div class="order-header list-item-head">
           <span class="order-no">订单号: {{ order.orderNo }}</span>
           <span class="create-time">{{ order.createdAt }}</span>
-          <el-tag class="status-tag">{{ formatOrderStatus(order.status) }}</el-tag>
+          <div class="header-actions">
+            <el-tag class="status-tag">{{ formatOrderStatus(order.status) }}</el-tag>
+            <el-button size="small" @click="goDetail(order.id)">查看详情</el-button>
+          </div>
         </div>
 
         <div class="order-body">
@@ -190,31 +201,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.order-item {
-  background: white;
-  border: 1px solid var(--ldk-border);
-  margin-bottom: 14px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--ldk-shadow-sm);
-}
-
-.order-header {
-  padding: 12px 18px;
-  background: #f9fbff;
-  border-bottom: 1px solid var(--ldk-border);
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: var(--ldk-text-secondary);
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.status-tag {
-  margin-left: auto;
-}
-
 .order-body {
   padding: 16px 18px;
 }
@@ -242,7 +228,7 @@ onMounted(() => {
 }
 
 .goods-meta {
-  color: #999;
+  color: var(--ldk-text-secondary);
   font-size: 12px;
 }
 
@@ -258,6 +244,17 @@ onMounted(() => {
 
 .pagination-container {
   justify-content: center;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions .status-tag {
+  margin-left: 0;
 }
 
 @media (max-width: 768px) {
