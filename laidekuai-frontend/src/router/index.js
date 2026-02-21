@@ -66,6 +66,12 @@ const routes = [
     meta: { title: '个人中心 - 来得快', requiresAuth: true }
   },
   {
+    path: '/addresses',
+    name: 'AddressManage',
+    component: () => import('@/views/user/AddressManage.vue'),
+    meta: { title: '地址管理 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/my-goods',
     name: 'MyGoods',
     component: () => import('@/views/user/MyGoods.vue'),
