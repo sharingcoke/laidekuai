@@ -89,7 +89,7 @@ public class GoodsController {
      * 提交审核（卖家）
      */
     @PostMapping("/{id}/submit")
-    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
     public Result<Void> submitForAudit(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

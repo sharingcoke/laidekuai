@@ -46,6 +46,14 @@ test.describe('admin pages', () => {
       });
     });
 
+    await page.route('**/api/admin/notices**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 0, message: 'ok', data: { records: [], total: 0 } })
+      });
+    });
+
     await page.route('**/api/admin/disputes**', async route => {
       await route.fulfill({
         status: 200,
@@ -73,6 +81,9 @@ test.describe('admin pages', () => {
     await page.goto(`${baseURL}/admin/system`);
     await page.getByRole('button', { name: '保存设置' }).click();
     await expect(lastMessage(page)).toHaveText('系统配置保存功能暂未开放');
+
+    await page.goto(`${baseURL}/admin/notices`);
+    await expect(page.getByText('公告管理')).toBeVisible();
   });
 
   test('non-admin is redirected away from admin pages', async ({ page }) => {

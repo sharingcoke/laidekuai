@@ -2,6 +2,7 @@ package com.laidekuai.order.service;
 
 import com.laidekuai.address.entity.Address;
 import com.laidekuai.address.mapper.AddressMapper;
+import com.laidekuai.audit.service.AuditLogService;
 import com.laidekuai.common.dto.Result;
 import com.laidekuai.common.util.OrderNoGenerator;
 import com.laidekuai.goods.entity.Goods;
@@ -50,6 +51,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderNoGenerator orderNoGenerator;
+
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private OrderServiceImpl orderService;

@@ -6,8 +6,9 @@ import goodsApi from '@/api/goods'
 import cartApi from '@/api/cart'
 import reviewApi from '@/api/review'
 import messageApi from '@/api/message'
+import favoriteApi from '@/api/favorite'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ShoppingCart, ChatDotRound } from '@element-plus/icons-vue'
+import { ShoppingCart, ChatDotRound, Star, StarFilled } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +41,8 @@ const messageQuery = reactive({
 })
 const messageReplyInputs = reactive({})
 const messageReplySubmitting = reactive({})
+const favoriteLoading = ref(false)
+const isFavorite = ref(false)
 
 // 计算属性
 const imageUrls = computed(() => {
@@ -87,6 +90,7 @@ const fetchDetail = async () => {
       fetchReviews()
       fetchRating()
       fetchMessages()
+      fetchFavorite()
     } else {
       ElMessage.error(res.message || '获取商品详情失败')
       router.push('/goods')
@@ -96,6 +100,41 @@ const fetchDetail = async () => {
     ElMessage.error('加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const fetchFavorite = async () => {
+  if (!authStore.isLoggedIn) return
+  try {
+    const res = await favoriteApi.check(goodsId)
+    if (res.code === 0) {
+      isFavorite.value = !!res.data
+    }
+  } catch (error) {
+    console.error('获取收藏状态失败:', error)
+  }
+}
+
+const toggleFavorite = async () => {
+  if (!authStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  if (!goods.value) return
+  favoriteLoading.value = true
+  try {
+    const res = isFavorite.value
+      ? await favoriteApi.remove(goods.value.id)
+      : await favoriteApi.add(goods.value.id)
+    if (res.code === 0) {
+      isFavorite.value = !isFavorite.value
+      ElMessage.success(isFavorite.value ? '已加入收藏' : '已取消收藏')
+    }
+  } catch (error) {
+    console.error('收藏操作失败:', error)
+  } finally {
+    favoriteLoading.value = false
   }
 }
 
@@ -396,7 +435,14 @@ onMounted(() => {
 
           <div class="secondary-actions">
               <el-button link :icon="ChatDotRound" @click="contactSeller">联系卖家/留言</el-button>
-              <!-- 收藏按钮预留 -->
+              <el-button
+                link
+                :icon="isFavorite ? StarFilled : Star"
+                :loading="favoriteLoading"
+                @click="toggleFavorite"
+              >
+                {{ isFavorite ? '已收藏' : '收藏' }}
+              </el-button>
           </div>
         </div>
       </div>

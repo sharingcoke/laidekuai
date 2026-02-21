@@ -44,6 +44,9 @@ const authStore = useAuthStore()
                   <RouterLink to="/admin/messages">留言治理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
+                  <RouterLink to="/admin/notices">公告管理</RouterLink>
+                </el-dropdown-item>
+                <el-dropdown-item>
                   <RouterLink to="/admin/categories">分类管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
@@ -66,6 +69,7 @@ const authStore = useAuthStore()
         <div class="user-actions">
           <template v-if="authStore.isLoggedIn">
             <RouterLink to="/cart" class="btn">购物车</RouterLink>
+            <RouterLink to="/favorites" class="btn">我的收藏</RouterLink>
             <RouterLink to="/orders" class="btn">我的订单</RouterLink>
             <RouterLink to="/profile" class="btn">
               {{ authStore.user?.nickName || '个人中心' }}

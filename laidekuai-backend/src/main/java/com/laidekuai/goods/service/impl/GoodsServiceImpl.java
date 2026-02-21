@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laidekuai.audit.service.AuditLogService;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
@@ -35,6 +36,7 @@ public class GoodsServiceImpl implements GoodsService {
 
     private final GoodsMapper goodsMapper;
     private final ObjectMapper objectMapper;
+    private final AuditLogService auditLogService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -315,6 +317,7 @@ public class GoodsServiceImpl implements GoodsService {
         goodsMapper.updateById(goods);
 
         log.info("商品审核通过，商品ID: {}", goodsId);
+        auditLogService.record(null, "GOODS_APPROVE", adminId, "ADMIN", null);
 
         return Result.success();
     }
@@ -346,6 +349,7 @@ public class GoodsServiceImpl implements GoodsService {
         goodsMapper.updateById(goods);
 
         log.info("商品审核驳回，商品ID: {}, 原因: {}", goodsId, reason);
+        auditLogService.record(null, "GOODS_REJECT", adminId, "ADMIN", reason);
 
         return Result.success();
     }

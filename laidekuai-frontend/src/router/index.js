@@ -108,6 +108,12 @@ const routes = [
     meta: { title: '消息中心 - 来得快', requiresAuth: true }
   },
   {
+    path: '/favorites',
+    name: 'Favorites',
+    component: () => import('@/views/favorite/FavoriteList.vue'),
+    meta: { title: '我的收藏 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/my-goods',
     name: 'MyGoods',
     component: () => import('@/views/user/MyGoods.vue'),
@@ -146,6 +152,12 @@ const routes = [
     name: 'AdminSystemConfig',
     component: () => import('@/views/admin/SystemConfig.vue'),
     meta: { title: '系统配置 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/notices',
+    name: 'AdminNotices',
+    component: () => import('@/views/admin/NoticeManage.vue'),
+    meta: { title: '公告管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
 {
     path: '/admin/users',

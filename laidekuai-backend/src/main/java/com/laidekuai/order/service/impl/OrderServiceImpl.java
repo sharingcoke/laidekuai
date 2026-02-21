@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.address.entity.Address;
+import com.laidekuai.audit.service.AuditLogService;
 import com.laidekuai.address.mapper.AddressMapper;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
@@ -52,6 +53,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderNoGenerator orderNoGenerator;
     private final UserMapper userMapper;
     private final DisputeMapper disputeMapper;
+    private final AuditLogService auditLogService;
 
     /**
      * 娲昏穬璁㈠崟鏁颁笂闄?
@@ -472,6 +474,10 @@ public class OrderServiceImpl implements OrderService {
         item.setUpdatedAt(now);
         orderItemMapper.updateById(item);
 
+        if (admin) {
+            auditLogService.record(order.getId(), "SHIP_BY_ADMIN", operatorId, "ADMIN", null);
+        }
+
         int unshipped = orderItemMapper.countUnshippedItems(order.getId());
         if (unshipped == 0) {
             int updated = orderMapper.markShippedIfPaid(order.getId(), now);
@@ -628,9 +634,11 @@ public class OrderServiceImpl implements OrderService {
             }
             orderItemMapper.updateStatusByOrderId(orderId, "REFUNDED");
             log.info("订单 {} 退款成功", order.getOrderNo());
+            auditLogService.record(orderId, "REFUND_APPROVE", userId, "SELLER", remark);
         } else {
             orderItemMapper.updateOrderStatusByOrderId(orderId, "PAID");
             log.info("订单 {} 退款被拒绝", order.getOrderNo());
+            auditLogService.record(orderId, "REFUND_REJECT", userId, "SELLER", remark);
         }
 
         return Result.success();
@@ -667,6 +675,7 @@ public class OrderServiceImpl implements OrderService {
             log.debug("释放商品 {} 库存: {}", item.getGoodsId(), item.getQuantity());
         }
         orderItemMapper.updateStatusByOrderId(orderId, "REFUNDED");
+        auditLogService.record(orderId, "REFUND_APPROVE", adminId, "ADMIN", null);
 
         return Result.success();
     }
@@ -696,6 +705,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderItemMapper.updateOrderStatusByOrderId(orderId, "PAID");
+        auditLogService.record(orderId, "REFUND_REJECT", adminId, "ADMIN", remark);
         return Result.success();
     }
 

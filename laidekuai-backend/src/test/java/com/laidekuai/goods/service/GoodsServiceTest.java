@@ -2,6 +2,7 @@ package com.laidekuai.goods.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laidekuai.audit.service.AuditLogService;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.goods.dto.GoodsCreateRequest;
@@ -40,6 +41,9 @@ class GoodsServiceTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private GoodsServiceImpl goodsService;
