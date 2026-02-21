@@ -88,7 +88,7 @@ class MessageServiceTest {
         User user = new User();
         user.setId(10L);
         user.setNickName("Tom");
-        when(userMapper.selectById(10L)).thenReturn(user);
+        when(userMapper.selectBatchIds(anyCollection())).thenReturn(List.of(user));
 
         Result<PageResult<MessageDTO>> result = messageService.listGoodsMessages(2L, 1L, 10L, true);
 

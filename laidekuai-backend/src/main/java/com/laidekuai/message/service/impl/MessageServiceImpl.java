@@ -25,7 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -110,28 +114,73 @@ public class MessageServiceImpl implements MessageService {
         Page<Message> pageParam = new Page<>(page, size);
         Page<Message> result = messageMapper.selectByGoodsId(pageParam, goodsId, purchasedOnly);
 
-        List<MessageDTO> dtos = result.getRecords().stream()
+        List<Message> messages = result.getRecords();
+        Map<Long, List<MessageReply>> replyMap = new HashMap<>();
+        Map<Long, List<Message>> legacyReplyMap = new HashMap<>();
+        Set<Long> userIds = new HashSet<>();
+
+        for (Message message : messages) {
+            Long senderId = resolveMessageUserId(message);
+            if (senderId != null) {
+                userIds.add(senderId);
+            }
+
+            List<MessageReply> replies = messageReplyMapper.selectByMessageId(message.getId());
+            if (replies != null && !replies.isEmpty()) {
+                replyMap.put(message.getId(), replies);
+                for (MessageReply reply : replies) {
+                    if (reply.getReplierId() != null) {
+                        userIds.add(reply.getReplierId());
+                    }
+                }
+            } else {
+                replyMap.put(message.getId(), List.of());
+            }
+
+            List<Message> legacyReplies = messageMapper.selectReplies(message.getId());
+            if (legacyReplies != null && !legacyReplies.isEmpty()) {
+                legacyReplyMap.put(message.getId(), legacyReplies);
+                for (Message legacy : legacyReplies) {
+                    Long legacySenderId = resolveMessageUserId(legacy);
+                    if (legacySenderId != null) {
+                        userIds.add(legacySenderId);
+                    }
+                }
+            } else {
+                legacyReplyMap.put(message.getId(), List.of());
+            }
+        }
+
+        Map<Long, User> userMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            List<User> users = userMapper.selectBatchIds(userIds);
+            if (users != null) {
+                for (User user : users) {
+                    userMap.put(user.getId(), user);
+                }
+            }
+        }
+
+        List<MessageDTO> dtos = messages.stream()
                 .map(message -> {
                     Long senderId = resolveMessageUserId(message);
-                    User user = senderId != null ? userMapper.selectById(senderId) : null;
+                    User user = senderId != null ? userMap.get(senderId) : null;
                     String name = user != null ? user.getNickName() : null;
                     String avatar = user != null ? user.getAvatarUrl() : null;
                     MessageDTO dto = MessageDTO.fromMessage(message, name, avatar);
 
                     List<MessageDTO> replyDtos = new ArrayList<>();
-                    List<MessageReply> replies = messageReplyMapper.selectByMessageId(message.getId());
-                    if (replies != null && !replies.isEmpty()) {
-                        for (MessageReply reply : replies) {
-                            replyDtos.add(toReplyDTO(reply));
-                        }
+                    List<MessageReply> replies = replyMap.getOrDefault(message.getId(), List.of());
+                    for (MessageReply reply : replies) {
+                        replyDtos.add(toReplyDTO(reply, userMap));
                     }
 
-                    List<Message> legacyReplies = messageMapper.selectReplies(message.getId());
-                    if (legacyReplies != null && !legacyReplies.isEmpty()) {
+                    List<Message> legacyReplies = legacyReplyMap.getOrDefault(message.getId(), List.of());
+                    if (!legacyReplies.isEmpty()) {
                         replyDtos.addAll(legacyReplies.stream()
                                 .map(legacy -> {
                                     Long legacySenderId = resolveMessageUserId(legacy);
-                                    User legacyUser = legacySenderId != null ? userMapper.selectById(legacySenderId) : null;
+                                    User legacyUser = legacySenderId != null ? userMap.get(legacySenderId) : null;
                                     String legacyName = legacyUser != null ? legacyUser.getNickName() : null;
                                     String legacyAvatar = legacyUser != null ? legacyUser.getAvatarUrl() : null;
                                     return MessageDTO.fromMessage(legacy, legacyName, legacyAvatar);
@@ -304,6 +353,26 @@ public class MessageServiceImpl implements MessageService {
     private MessageDTO toReplyDTO(MessageReply reply) {
         Long userId = reply.getReplierId();
         User user = userId != null ? userMapper.selectById(userId) : null;
+        String name = user != null ? user.getNickName() : null;
+        String avatar = user != null ? user.getAvatarUrl() : null;
+
+        MessageDTO dto = new MessageDTO();
+        dto.setId(reply.getId());
+        dto.setParentId(reply.getMessageId());
+        dto.setSenderId(userId);
+        dto.setSenderName(name != null ? name : "User" + userId);
+        dto.setSenderAvatar(avatar);
+        dto.setContent(reply.getContent());
+        dto.setStatus(reply.getStatus());
+        dto.setCreatedAt(reply.getCreatedAt());
+        dto.setUpdatedAt(reply.getUpdatedAt());
+        dto.setUpdatedBy(reply.getUpdatedBy());
+        return dto;
+    }
+
+    private MessageDTO toReplyDTO(MessageReply reply, Map<Long, User> userMap) {
+        Long userId = reply.getReplierId();
+        User user = userId != null ? userMap.get(userId) : null;
         String name = user != null ? user.getNickName() : null;
         String avatar = user != null ? user.getAvatarUrl() : null;
 
