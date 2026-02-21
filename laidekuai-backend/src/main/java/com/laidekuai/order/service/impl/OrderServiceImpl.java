@@ -8,6 +8,8 @@ import com.laidekuai.address.mapper.AddressMapper;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.dispute.entity.Dispute;
+import com.laidekuai.dispute.mapper.DisputeMapper;
 import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.common.util.OrderNoGenerator;
 import com.laidekuai.common.util.SecurityUtils;
@@ -48,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final AddressMapper addressMapper;
     private final OrderNoGenerator orderNoGenerator;
     private final UserMapper userMapper;
+    private final DisputeMapper disputeMapper;
 
     /**
      * 娲昏穬璁㈠崟鏁颁笂闄?
@@ -542,9 +545,22 @@ public class OrderServiceImpl implements OrderService {
         // 妫€鏌ラ€€娆炬鏁帮紝杈惧埌2娆″悗绗?娆＄敵璇疯Е鍙戜簤璁?
         int refundCount = order.getRefundRequestCount() != null ? order.getRefundRequestCount() : 0;
         if (refundCount >= 2) {
-            // 瑙﹀彂浜夎
+            Dispute existing = disputeMapper.selectOne(new LambdaQueryWrapper<Dispute>()
+                    .eq(Dispute::getOrderId, orderId));
+            if (existing == null) {
+                Dispute dispute = new Dispute();
+                dispute.setOrderId(orderId);
+                dispute.setApplicantId(userId);
+                dispute.setApplicantType("BUYER");
+                dispute.setReason(reason);
+                dispute.setStatus("PENDING");
+                dispute.setCreatedAt(LocalDateTime.now());
+                disputeMapper.insert(dispute);
+            }
             order.setStatus("DISPUTED");
             order.setDisputeTime(LocalDateTime.now());
+            order.setRefundReason(reason);
+            order.setRefundRequestCount(refundCount + 1);
             order.setUpdatedAt(LocalDateTime.now());
             orderMapper.updateById(order);
             orderItemMapper.updateOrderStatusByOrderId(orderId, "DISPUTED");
@@ -749,4 +765,3 @@ public class OrderServiceImpl implements OrderService {
         return imageUrls;
     }
 }
-
