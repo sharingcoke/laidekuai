@@ -96,6 +96,7 @@ test.describe('auth pages', () => {
     await page.getByRole('button', { name: '登录' }).click();
 
     await page.waitForURL('**/profile');
+    await page.waitForFunction(() => localStorage.getItem('token') === 'token-123');
     const token = await page.evaluate(() => localStorage.getItem('token'));
     expect(token).toBe('token-123');
   });

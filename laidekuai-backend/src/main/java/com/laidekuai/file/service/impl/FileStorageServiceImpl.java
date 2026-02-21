@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -49,12 +51,9 @@ public class FileStorageServiceImpl implements FileStorageService {
             String newFilename = UUID.randomUUID().toString() + "." + extension;
 
             File destDir = new File(uploadPath, dateDir);
-            if (!destDir.exists() && !destDir.mkdirs()) {
-                return Result.error(500, "创建上传目录失败");
-            }
-
+            Files.createDirectories(destDir.toPath());
             File destFile = new File(destDir, newFilename);
-            file.transferTo(destFile);
+            Files.copy(file.getInputStream(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             log.info("文件上传成功: {}", destFile.getAbsolutePath());
             String url = "/files/" + dateDir + "/" + newFilename;

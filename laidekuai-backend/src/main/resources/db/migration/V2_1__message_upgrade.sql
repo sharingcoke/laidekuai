@@ -1,12 +1,11 @@
 -- MESSAGE-01: message compatibility upgrade + message_reply table
 
 -- 1) Extend message table (compatibility-first, keep legacy columns)
-ALTER TABLE message
-  ADD COLUMN user_id BIGINT NULL AFTER goods_id,
-  ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'visible' AFTER content,
-  ADD COLUMN is_purchased TINYINT NOT NULL DEFAULT 0 AFTER status,
-  ADD COLUMN updated_at DATETIME NULL AFTER created_at,
-  ADD COLUMN updated_by BIGINT NULL AFTER updated_at;
+ALTER TABLE message ADD COLUMN user_id BIGINT NULL;
+ALTER TABLE message ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'visible';
+ALTER TABLE message ADD COLUMN is_purchased TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE message ADD COLUMN updated_at DATETIME NULL;
+ALTER TABLE message ADD COLUMN updated_by BIGINT NULL;
 
 -- 2) Minimal backfill for compatibility
 UPDATE message
@@ -51,4 +50,4 @@ CREATE TABLE message_reply (
   INDEX idx_message_reply_replier_id (replier_id),
   INDEX idx_message_reply_status (status),
   INDEX idx_message_reply_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
