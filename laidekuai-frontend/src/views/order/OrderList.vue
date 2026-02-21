@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -58,6 +58,22 @@ const handlePay = (orderId) => {
   router.push(`/order/pay/${orderId}`)
 }
 
+const handleDetail = (orderId) => {
+  router.push(`/orders/${orderId}`)
+}
+
+const handleDisputeDetail = () => {
+  ElMessage.info('争议模块尚未实现')
+}
+
+const hasShippedItems = (order) => {
+  return (order.items || []).some(item => item.itemStatus === 'SHIPPED' || item.itemStatus === 'COMPLETED')
+}
+
+const canRefund = (order) => {
+  return order.status === 'PAID' && !hasShippedItems(order)
+}
+
 /**
  * 确认收货
  */
@@ -95,17 +111,20 @@ const handleCancel = (orderId) => {
 /**
  * 申请退款 (V1简化，仅触发)
  */
-const handleRefund = (orderId) => {
-   // 实际应弹出对话框输入原因
-   const reason = prompt('请输入退款原因')
-   if (reason) {
-       orderApi.refund(orderId, reason).then(res => {
-           if (res.code === 0) {
-               ElMessage.success('退款申请已提交')
-               fetchOrders()
-           }
-       })
-   }
+const handleRefund = (order) => {
+  if (!canRefund(order)) {
+    ElMessage.warning('订单已发货，无法申请退款')
+    return
+  }
+  const reason = prompt('请输入退款原因')
+  if (reason) {
+    orderApi.refund(order.id, reason).then(res => {
+      if (res.code === 0) {
+        ElMessage.success('退款申请已提交')
+        fetchOrders()
+      }
+    })
+  }
 }
 
 const canReview = (order) => {
@@ -139,6 +158,8 @@ const formatStatus = (status) => {
 const getStatusType = (status) => {
   if (status === 'PENDING_PAY') return 'danger'
   if (status === 'PAID') return 'warning'
+  if (status === 'REFUNDING') return 'warning'
+  if (status === 'DISPUTED') return 'danger'
   if (status === 'SHIPPED') return 'primary'
   if (status === 'COMPLETED') return 'success'
   return 'info'
@@ -184,7 +205,7 @@ onMounted(() => {
         <div class="order-header list-item-head">
           <span class="order-no">订单号: {{ order.orderNo }}</span>
           <span class="create-time">{{ order.createdAt }}</span>
-          <span class="seller">卖家: {{ order.items[0]?.sellerName || '未知' }}</span>
+          <span class="seller">卖家: {{ order.sellerName || '未知' }}</span>
           <el-tag :type="getStatusType(order.status)" class="status-tag">{{ formatStatus(order.status) }}</el-tag>
         </div>
         
@@ -207,15 +228,13 @@ onMounted(() => {
                 <div class="shipping">(含运费 ¥ {{ order.shippingFee }})</div>
             </div>
             
-            <div class="order-actions">
-                <el-button v-if="order.status === 'PENDING_PAY'" type="primary" size="small" @click="handlePay(order.id)">立即支付</el-button>
-                <el-button v-if="order.status === 'PENDING_PAY'" size="small" @click="handleCancel(order.id)">取消订单</el-button>
-                
-                <el-button v-if="order.status === 'SHIPPED'" type="success" size="small" @click="handleReceive(order.id)">确认收货</el-button>
-                
-                <el-button v-if="order.status === 'PAID'" size="small" @click="handleRefund(order.id)">申请退款</el-button>
-
-                <!-- REVIEW按钮移动到订单项内 -->
+                        <div class="order-actions">
+              <el-button v-if="order.status === 'PENDING_PAY'" type="primary" size="small" @click="handlePay(order.id)">立即支付</el-button>
+              <el-button v-if="order.status === 'PENDING_PAY'" size="small" @click="handleCancel(order.id)">取消订单</el-button>
+              <el-button v-if="order.status === 'SHIPPED'" type="success" size="small" @click="handleReceive(order.id)">确认收货</el-button>
+              <el-button v-if="order.status === 'PAID'" size="small" :disabled="!canRefund(order)" @click="handleRefund(order)">申请退款</el-button>
+              <el-button v-if="order.status === 'DISPUTED'" size="small" @click="handleDisputeDetail">查看争议</el-button>
+              <el-button size="small" @click="handleDetail(order.id)">查看详情</el-button>
             </div>
         </div>
       </div>
@@ -341,3 +360,4 @@ onMounted(() => {
   }
 }
 </style>
+

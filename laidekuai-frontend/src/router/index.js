@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 /**
@@ -54,6 +54,12 @@ const routes = [
     meta: { title: '确认订单 - 来得快', requiresAuth: true }
   },
   {
+    path: '/order/success',
+    name: 'OrderSuccess',
+    component: () => import('@/views/order/OrderSuccess.vue'),
+    meta: { title: '下单成功 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/order/pay/:id',
     name: 'OrderPay',
     component: () => import('@/views/order/OrderPay.vue'),
@@ -64,6 +70,12 @@ const routes = [
     name: 'OrderList',
     component: () => import('@/views/order/OrderList.vue'),
     meta: { title: '我的订单 - 来得快', requiresAuth: true }
+  },
+  {
+    path: '/orders/:id',
+    name: 'OrderDetail',
+    component: () => import('@/views/order/OrderDetail.vue'),
+    meta: { title: '订单详情 - 来得快', requiresAuth: true }
   },
   {
     path: '/reviews/my',
@@ -224,3 +236,4 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+

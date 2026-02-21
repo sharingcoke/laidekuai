@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -96,13 +96,12 @@ const submitOrder = async () => {
     const res = await orderApi.create(orderData)
     if (res.code === 0) {
       ElMessage.success('订单创建成功')
-      // 清空结算缓存
+      const orders = Array.isArray(res.data) ? res.data : []
       sessionStorage.removeItem('checkoutItems')
-      
-      // 跳转订单列表或支付页
-      const orders = res.data || []
-      if (Array.isArray(orders) && orders.length === 1) {
-        router.push(`/order/pay/${orders[0].id}`)
+
+      if (orders.length > 0) {
+        sessionStorage.setItem('orderSuccess', JSON.stringify(orders))
+        router.push('/order/success')
       } else {
         router.push('/orders')
       }
@@ -360,3 +359,5 @@ const saveAddress = async () => {
   }
 }
 </style>
+
+
