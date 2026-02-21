@@ -72,6 +72,12 @@ const routes = [
     meta: { title: '地址管理 - 来得快', requiresAuth: true }
   },
   {
+    path: '/messages',
+    name: 'MessageCenter',
+    component: () => import('@/views/user/MessageCenter.vue'),
+    meta: { title: '消息中心 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/my-goods',
     name: 'MyGoods',
     component: () => import('@/views/user/MyGoods.vue'),
