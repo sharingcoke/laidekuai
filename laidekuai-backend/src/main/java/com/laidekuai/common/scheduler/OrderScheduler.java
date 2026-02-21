@@ -1,6 +1,7 @@
 package com.laidekuai.common.scheduler;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.laidekuai.common.dto.Result;
 import com.laidekuai.order.entity.Order;
 import com.laidekuai.order.mapper.OrderMapper;
 import com.laidekuai.order.service.OrderService;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,6 +26,8 @@ public class OrderScheduler {
     private final OrderMapper orderMapper;
     private final OrderService orderService;
 
+    private static final int SCAN_LIMIT = 200;
+
     @Value("${app.order.timeout-minutes:15}")
     private Integer timeoutMinutes;
 
@@ -35,28 +37,36 @@ public class OrderScheduler {
     @Scheduled(cron = "0 0/1 * * * ?")
     public void cancelTimeoutOrders() {
         log.debug("开始检查超时订单...");
-        
-        LocalDateTime timeoutTime = LocalDateTime.now().minusMinutes(timeoutMinutes);
-        
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getStatus, "PENDING_PAY")
-               .eq(Order::getDeleted, 0)
-               .lt(Order::getCreatedAt, timeoutTime); // 创建时间早于超市时间点
-               
+
+        QueryWrapper<Order> wrapper = new QueryWrapper<>();
+        wrapper.eq("status", "PENDING_PAY")
+               .eq("deleted", 0)
+               .apply("created_at <= DATE_SUB(NOW(), INTERVAL {0} MINUTE)", timeoutMinutes)
+               .orderByAsc("created_at")
+               .last("LIMIT " + SCAN_LIMIT);
+
         List<Order> timeoutOrders = orderMapper.selectList(wrapper);
-        
-        if (timeoutOrders.isEmpty()) {
-            return;
-        }
-        
-        log.info("发现 {} 个超时未支付订单，开始处理...", timeoutOrders.size());
-        
+
+        int canceledCount = 0;
         for (Order order : timeoutOrders) {
             try {
-                orderService.cancelOrderSystem(order.getId());
+                if (!"PENDING_PAY".equals(order.getStatus())) {
+                    continue;
+                }
+                Result<Void> result = orderService.cancelOrderSystem(order.getId());
+                if (result != null && result.isSuccess()) {
+                    Order refreshed = orderMapper.selectById(order.getId());
+                    if (refreshed != null
+                            && "CANCELED".equals(refreshed.getStatus())
+                            && "TIMEOUT_CANCELED".equals(refreshed.getCancelReason())) {
+                        canceledCount++;
+                    }
+                }
             } catch (Exception e) {
                 log.error("自动取消订单 {} 失败", order.getOrderNo(), e);
             }
         }
+
+        log.info("超时订单扫描 {} 条，成功取消 {} 条", timeoutOrders.size(), canceledCount);
     }
 }

@@ -173,6 +173,34 @@ class OrderServiceTest {
     }
 
     @Test
+    void testCancelOrderSystem_RepeatOnlyReleasesStockOnce() {
+        Order order = new Order();
+        order.setId(1L);
+        order.setDeleted(0);
+        order.setOrderNo("O1");
+
+        OrderItem item = new OrderItem();
+        item.setId(11L);
+        item.setGoodsId(9L);
+        item.setQuantity(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+        when(orderMapper.markCanceledIfPending(eq(1L), eq("TIMEOUT_CANCELED"), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(1, 0);
+        when(orderItemMapper.selectByOrderId(1L)).thenReturn(List.of(item));
+        when(goodsMapper.releaseStock(9L, 2)).thenReturn(1);
+        when(orderItemMapper.updateStatusByOrderId(1L, "CANCELED")).thenReturn(1);
+
+        Result<Void> first = orderService.cancelOrderSystem(1L);
+        Result<Void> second = orderService.cancelOrderSystem(1L);
+
+        assertTrue(first.isSuccess());
+        assertTrue(second.isSuccess());
+        verify(goodsMapper, times(1)).releaseStock(9L, 2);
+        verify(orderItemMapper, times(1)).updateStatusByOrderId(1L, "CANCELED");
+    }
+
+    @Test
     void testShipOrderItem_NoAggregateWhenRemainingItems() {
         Order order = new Order();
         order.setId(1L);
