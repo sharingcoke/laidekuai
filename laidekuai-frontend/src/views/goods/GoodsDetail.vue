@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import goodsApi from '@/api/goods'
 import cartApi from '@/api/cart'
+import reviewApi from '@/api/review'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ShoppingCart, ChatDotRound } from '@element-plus/icons-vue'
 
@@ -17,6 +18,16 @@ const loading = ref(false)
 const addingToCart = ref(false)
 const quantity = ref(1)
 const activeImageIndex = ref(0) // 当前显示的图片索引
+const reviewLoading = ref(false)
+const reviewList = ref([])
+const reviewTotal = ref(0)
+const reviewRating = ref(0)
+const reviewQuery = reactive({
+  page: 1,
+  size: 10
+})
+const replyInputs = reactive({})
+const replySubmitting = reactive({})
 
 // 计算属性
 const imageUrls = computed(() => {
@@ -43,6 +54,15 @@ const canBuy = computed(() => {
   return goods.value && goods.value.status === 'ON_SHELF' && goods.value.stock > 0
 })
 
+const canReplyReview = computed(() => {
+  if (!authStore.isLoggedIn) return false
+  if (authStore.isAdmin) return true
+  return goods.value && authStore.user?.id === goods.value.sellerId
+})
+
+const normalReviews = computed(() => reviewList.value.filter(review => !review.isRefunded))
+const refundedReviews = computed(() => reviewList.value.filter(review => review.isRefunded))
+
 /**
  * 获取商品详情
  */
@@ -52,6 +72,8 @@ const fetchDetail = async () => {
     const res = await goodsApi.detail(goodsId)
     if (res.code === 0) {
       goods.value = res.data
+      fetchReviews()
+      fetchRating()
     } else {
       ElMessage.error(res.message || '获取商品详情失败')
       router.push('/goods')
@@ -61,6 +83,61 @@ const fetchDetail = async () => {
     ElMessage.error('加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const fetchReviews = async () => {
+  reviewLoading.value = true
+  try {
+    const res = await reviewApi.listGoods(goodsId, {
+      page: reviewQuery.page,
+      size: reviewQuery.size
+    })
+    if (res.code === 0) {
+      reviewList.value = res.data.records
+      reviewTotal.value = res.data.total
+    }
+  } catch (error) {
+    console.error('获取评价失败:', error)
+  } finally {
+    reviewLoading.value = false
+  }
+}
+
+const fetchRating = async () => {
+  try {
+    const res = await reviewApi.getGoodsRating(goodsId)
+    if (res.code === 0) {
+      reviewRating.value = res.data
+    }
+  } catch (error) {
+    console.error('获取评分失败:', error)
+  }
+}
+
+const handleReviewPageChange = (page) => {
+  reviewQuery.page = page
+  fetchReviews()
+}
+
+const submitReply = async (review) => {
+  const content = (replyInputs[review.id] || '').trim()
+  if (!content) {
+    ElMessage.warning('请输入回复内容')
+    return
+  }
+  replySubmitting[review.id] = true
+  try {
+    const res = await reviewApi.reply(review.id, content)
+    if (res.code === 0) {
+      ElMessage.success('回复已更新')
+      replyInputs[review.id] = ''
+      fetchReviews()
+    }
+  } catch (error) {
+    console.error('回复失败:', error)
+  } finally {
+    replySubmitting[review.id] = false
   }
 }
 
@@ -238,6 +315,124 @@ onMounted(() => {
           <div class="content-body" v-html="goods.detail || '暂无描述'"></div>
       </div>
 
+      <!-- 评价区 -->
+      <div class="detail-review-section panel-card">
+        <div class="section-header">
+          <div>
+            <h3>评价</h3>
+            <p class="section-desc">退款评价会单独标记并不参与评分均值。</p>
+          </div>
+          <div class="rating-box">
+            <el-rate :model-value="reviewRating" disabled show-score />
+            <span class="rating-score">{{ Number(reviewRating || 0).toFixed(1) }}</span>
+          </div>
+        </div>
+
+        <div class="review-list" v-loading="reviewLoading">
+          <el-empty v-if="!reviewLoading && reviewList.length === 0" description="暂无评价" />
+
+          <template v-else>
+            <div class="review-group" v-if="normalReviews.length">
+              <div class="group-title">正常评价</div>
+              <div class="review-card" v-for="review in normalReviews" :key="review.id">
+                <div class="review-head">
+                  <span class="buyer">{{ review.buyerName || `用户${review.buyerId}` }}</span>
+                  <span class="time">{{ review.createdAt }}</span>
+                </div>
+                <el-rate :model-value="review.rating" disabled show-score />
+                <div class="review-content">{{ review.content || '未填写评价内容' }}</div>
+                <div class="review-images" v-if="review.images && review.images.length">
+                  <el-image
+                    v-for="(img, index) in review.images"
+                    :key="index"
+                    :src="img"
+                    fit="cover"
+                    class="review-image"
+                    :preview-src-list="review.images"
+                    :initial-index="index"
+                  />
+                </div>
+                <div v-if="review.reply" class="review-reply">
+                  <span class="label">卖家回复：</span>
+                  <span>{{ review.reply }}</span>
+                </div>
+                <div v-if="canReplyReview" class="reply-form">
+                  <el-input
+                    v-model="replyInputs[review.id]"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="回复该评价"
+                  />
+                  <el-button
+                    type="primary"
+                    size="small"
+                    :loading="replySubmitting[review.id]"
+                    @click="submitReply(review)"
+                  >
+                    回复
+                  </el-button>
+                </div>
+              </div>
+            </div>
+
+            <div class="review-group" v-if="refundedReviews.length">
+              <div class="group-title">退款评价</div>
+              <div class="review-card refund" v-for="review in refundedReviews" :key="review.id">
+                <div class="review-head">
+                  <span class="buyer">{{ review.buyerName || `用户${review.buyerId}` }}</span>
+                  <el-tag type="warning" size="small">退款评价</el-tag>
+                  <span class="time">{{ review.createdAt }}</span>
+                </div>
+                <el-rate :model-value="review.rating" disabled show-score />
+                <div class="review-content">{{ review.content || '未填写评价内容' }}</div>
+                <div class="review-images" v-if="review.images && review.images.length">
+                  <el-image
+                    v-for="(img, index) in review.images"
+                    :key="index"
+                    :src="img"
+                    fit="cover"
+                    class="review-image"
+                    :preview-src-list="review.images"
+                    :initial-index="index"
+                  />
+                </div>
+                <div v-if="review.reply" class="review-reply">
+                  <span class="label">卖家回复：</span>
+                  <span>{{ review.reply }}</span>
+                </div>
+                <div v-if="canReplyReview" class="reply-form">
+                  <el-input
+                    v-model="replyInputs[review.id]"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="回复该评价"
+                  />
+                  <el-button
+                    type="primary"
+                    size="small"
+                    :loading="replySubmitting[review.id]"
+                    @click="submitReply(review)"
+                  >
+                    回复
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="pagination-container" v-if="reviewTotal > 0">
+          <el-pagination
+            v-model:current-page="reviewQuery.page"
+            v-model:page-size="reviewQuery.size"
+            layout="prev, pager, next, total"
+            :total="reviewTotal"
+            @current-change="handleReviewPageChange"
+            background
+          />
+        </div>
+      </div>
+
     </div>
     <el-empty v-else description="商品不存在或已删除" />
   </div>
@@ -313,12 +508,12 @@ onMounted(() => {
 }
 
 .price-box {
-  background: linear-gradient(120deg, #fff2f2 0%, #fff8f1 100%);
-  border: 1px solid #ffdede;
+  background: #fff7f6;
+  border: 1px solid #f0dddd;
   padding: 16px 18px;
   border-radius: 10px;
   margin-bottom: 20px;
-  color: #e05555;
+  color: var(--ldk-danger);
 }
 
 .currency {
@@ -394,6 +589,118 @@ onMounted(() => {
   color: var(--ldk-text-regular);
 }
 
+.detail-review-section {
+  margin-top: 24px;
+  padding: 26px 28px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--ldk-border);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.section-desc {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--ldk-text-secondary);
+}
+
+.rating-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-score {
+  font-weight: 600;
+  color: var(--ldk-text-primary);
+}
+
+.review-group + .review-group {
+  margin-top: 18px;
+}
+
+.group-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ldk-text-primary);
+  margin-bottom: 10px;
+}
+
+.review-card {
+  padding: 16px 18px;
+  border: 1px solid var(--ldk-border);
+  border-radius: var(--ldk-radius-sm);
+  background: var(--ldk-card-bg);
+  margin-bottom: 12px;
+}
+
+.review-card.refund {
+  border-style: dashed;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ldk-text-secondary);
+  margin-bottom: 8px;
+}
+
+.review-head .buyer {
+  font-weight: 600;
+  color: var(--ldk-text-primary);
+}
+
+.review-head .time {
+  margin-left: auto;
+}
+
+.review-content {
+  margin-top: 6px;
+  color: var(--ldk-text-regular);
+  font-size: 14px;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.review-image {
+  width: 88px;
+  height: 88px;
+  border-radius: 8px;
+}
+
+.review-reply {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--ldk-border);
+  font-size: 13px;
+  color: var(--ldk-text-secondary);
+}
+
+.review-reply .label {
+  color: var(--ldk-text-primary);
+  font-weight: 500;
+}
+
+.reply-form {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .detail-main {
     flex-direction: column;
@@ -414,6 +721,11 @@ onMounted(() => {
 
   .price {
     font-size: 30px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

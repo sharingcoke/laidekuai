@@ -124,19 +124,19 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<ReviewDTO> replyReview(Long reviewId, String reply, Long userId) {
-        log.info("卖家 {} 回复评价 {}", userId, reviewId);
+        log.info("卖家/管理员 {} 回复评价 {}", userId, reviewId);
 
         Review review = reviewMapper.selectById(reviewId);
         if (review == null || review.getDeleted() == 1) {
-            return Result.error(40504, "评价不存在");
+            return Result.error(ErrorCode.REVIEW_NOT_FOUND);
         }
-        // 只有卖家可以回复
-        if (!review.getSellerId().equals(userId)) {
-            return Result.error(ErrorCode.FORBIDDEN);
-        }
-        // 检查是否已回复
-        if (review.getReply() != null && !review.getReply().isEmpty()) {
-            return Result.error(40505, "已回复过该评价");
+
+        boolean isAdmin = SecurityUtils.isAdmin();
+        if (!isAdmin) {
+            OrderItem item = orderItemMapper.selectById(review.getOrderItemId());
+            if (item == null || !item.getSellerId().equals(userId)) {
+                return Result.error(ErrorCode.FORBIDDEN);
+            }
         }
 
         // 更新回复
@@ -150,7 +150,13 @@ public class ReviewServiceImpl implements ReviewService {
         User user = userMapper.selectById(review.getBuyerId());
         String nickname = user != null ? user.getNickName() : null;
 
-        return Result.success(ReviewDTO.fromReview(review, nickname));
+        ReviewDTO dto = ReviewDTO.fromReview(review, nickname);
+        Goods goods = goodsMapper.selectById(review.getGoodsId());
+        if (goods != null) {
+            dto.setGoodsTitle(goods.getTitle());
+        }
+
+        return Result.success(dto);
     }
 
     @Override

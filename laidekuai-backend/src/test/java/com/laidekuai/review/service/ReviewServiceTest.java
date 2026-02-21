@@ -14,13 +14,18 @@ import com.laidekuai.review.mapper.ReviewMapper;
 import com.laidekuai.review.service.impl.ReviewServiceImpl;
 import com.laidekuai.user.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,6 +52,11 @@ class ReviewServiceTest {
 
     @InjectMocks
     private ReviewServiceImpl reviewService;
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void testCreateReview_DuplicateOrderItem() {
@@ -176,5 +186,78 @@ class ReviewServiceTest {
         ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
         verify(reviewMapper).insert(captor.capture());
         assertEquals(0, captor.getValue().getIsRefunded());
+    }
+
+    @Test
+    void testReplyReview_BySeller() {
+        Review review = new Review();
+        review.setId(10L);
+        review.setOrderItemId(100L);
+        review.setBuyerId(200L);
+        review.setGoodsId(300L);
+        review.setDeleted(0);
+
+        OrderItem item = new OrderItem();
+        item.setId(100L);
+        item.setSellerId(999L);
+
+        when(reviewMapper.selectById(10L)).thenReturn(review);
+        when(orderItemMapper.selectById(100L)).thenReturn(item);
+        when(reviewMapper.updateById(any(Review.class))).thenReturn(1);
+
+        Result<ReviewDTO> result = reviewService.replyReview(10L, "感谢支持", 999L);
+
+        assertTrue(result.isSuccess());
+        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+        verify(reviewMapper).updateById(captor.capture());
+        assertEquals("感谢支持", captor.getValue().getReply());
+    }
+
+    @Test
+    void testReplyReview_ByAdmin() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        1L,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
+
+        Review review = new Review();
+        review.setId(11L);
+        review.setOrderItemId(101L);
+        review.setBuyerId(201L);
+        review.setGoodsId(301L);
+        review.setDeleted(0);
+
+        when(reviewMapper.selectById(11L)).thenReturn(review);
+        when(reviewMapper.updateById(any(Review.class))).thenReturn(1);
+
+        Result<ReviewDTO> result = reviewService.replyReview(11L, "管理员回复", 888L);
+
+        assertTrue(result.isSuccess());
+        verify(orderItemMapper, never()).selectById(anyLong());
+    }
+
+    @Test
+    void testReplyReview_Forbidden() {
+        Review review = new Review();
+        review.setId(12L);
+        review.setOrderItemId(102L);
+        review.setBuyerId(202L);
+        review.setGoodsId(302L);
+        review.setDeleted(0);
+
+        OrderItem item = new OrderItem();
+        item.setId(102L);
+        item.setSellerId(777L);
+
+        when(reviewMapper.selectById(12L)).thenReturn(review);
+        when(orderItemMapper.selectById(102L)).thenReturn(item);
+
+        Result<ReviewDTO> result = reviewService.replyReview(12L, "无权限回复", 888L);
+
+        assertEquals(ErrorCode.FORBIDDEN.getCode(), result.getCode());
+        verify(reviewMapper, never()).updateById(any(Review.class));
     }
 }

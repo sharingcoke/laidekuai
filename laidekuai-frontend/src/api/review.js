@@ -48,6 +48,17 @@ export default {
     },
 
     /**
+     * 卖家回复评价
+     */
+    reply(id, sellerReply) {
+        return request({
+            url: `/reviews/${id}/reply`,
+            method: 'post',
+            data: { sellerReply }
+        })
+    },
+
+    /**
      * 管理员评价列表
      */
     listAdmin(params) {

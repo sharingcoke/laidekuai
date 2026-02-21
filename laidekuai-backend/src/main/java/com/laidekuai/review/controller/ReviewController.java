@@ -1,9 +1,11 @@
 package com.laidekuai.review.controller;
 
+import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
 import com.laidekuai.common.util.SecurityUtils;
 import com.laidekuai.review.dto.ReviewDTO;
+import com.laidekuai.review.dto.ReviewReplyRequest;
 import com.laidekuai.review.dto.ReviewRequest;
 import com.laidekuai.review.service.ReviewService;
 import jakarta.validation.Valid;
@@ -41,9 +43,14 @@ public class ReviewController {
     @PostMapping("/{id}/reply")
     public Result<ReviewDTO> replyReview(
             @PathVariable("id") Long reviewId,
-            @RequestParam("content") String reply) {
+            @Valid @RequestBody(required = false) ReviewReplyRequest request,
+            @RequestParam(value = "content", required = false) String reply) {
         Long userId = SecurityUtils.getCurrentUserId();
-        return reviewService.replyReview(reviewId, reply, userId);
+        String content = request != null ? request.getSellerReply() : reply;
+        if (content == null || content.isBlank()) {
+            return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), "回复内容不能为空");
+        }
+        return reviewService.replyReview(reviewId, content, userId);
     }
 
     /**
