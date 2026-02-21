@@ -5,12 +5,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.PageResult;
 import com.laidekuai.common.dto.Result;
+import com.laidekuai.common.enums.GoodsStatus;
 import com.laidekuai.goods.entity.Goods;
 import com.laidekuai.goods.mapper.GoodsMapper;
 import com.laidekuai.message.dto.MessageDTO;
 import com.laidekuai.message.dto.MessageRequest;
 import com.laidekuai.message.entity.Message;
+import com.laidekuai.message.entity.MessageReply;
 import com.laidekuai.message.mapper.MessageMapper;
+import com.laidekuai.message.mapper.MessageReplyMapper;
 import com.laidekuai.message.service.MessageService;
 import com.laidekuai.user.entity.User;
 import com.laidekuai.user.mapper.UserMapper;
@@ -20,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,37 +40,36 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageMapper messageMapper;
     private final GoodsMapper goodsMapper;
+    private final MessageReplyMapper messageReplyMapper;
     private final UserMapper userMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<MessageDTO> sendMessage(MessageRequest request, Long userId) {
-        log.info("用户 {} 在商品 {} 发送留言", userId, request.getGoodsId());
+        log.info("User {} sends message for goods {}", userId, request.getGoodsId());
 
-        // 校验商品存在
         Goods goods = goodsMapper.selectById(request.getGoodsId());
         if (goods == null || goods.getDeleted() == 1) {
             return Result.error(ErrorCode.GOODS_NOT_FOUND);
         }
-
-        // 如果是回复，校验父留言存在
-        if (request.getParentId() != null) {
-            Message parent = messageMapper.selectById(request.getParentId());
-            if (parent == null || parent.getDeleted() == 1) {
-                return Result.error(40701, "回复的留言不存在");
-            }
+        if (goods.getStatus() != GoodsStatus.APPROVED) {
+            return Result.error(ErrorCode.GOODS_STATUS_ERROR);
         }
 
-        // 创建留言
         Message message = new Message();
         message.setGoodsId(request.getGoodsId());
+        message.setUserId(userId);
         message.setSenderId(userId);
-        message.setParentId(request.getParentId());
         message.setContent(request.getContent());
-        message.setCreatedAt(LocalDateTime.now());
+        message.setStatus("visible");
+        message.setIsPurchased(0);
+        LocalDateTime now = LocalDateTime.now();
+        message.setCreatedAt(now);
+        message.setUpdatedAt(now);
+        message.setUpdatedBy(userId);
         messageMapper.insert(message);
 
-        log.info("留言发送成功, ID: {}", message.getId());
+        log.info("Message created ID: {}", message.getId());
 
         User user = userMapper.selectById(userId);
         String name = user != null ? user.getNickName() : null;
@@ -74,54 +78,70 @@ public class MessageServiceImpl implements MessageService {
         return Result.success(MessageDTO.fromMessage(message, name, avatar));
     }
 
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<Void> deleteMessage(Long messageId, Long userId) {
-        log.info("用户 {} 删除留言 {}", userId, messageId);
+        log.info("User {} deletes message {}", userId, messageId);
 
         Message message = messageMapper.selectById(messageId);
-        if (message == null || message.getDeleted() == 1) {
-            return Result.error(40702, "留言不存在");
+        String status = normalizeStatus(message != null ? message.getStatus() : null);
+        if (message == null || "deleted".equalsIgnoreCase(status) || message.getDeleted() == 1) {
+            return Result.error(40702, "Message not found");
         }
-        // 只有作者可以删除
-        if (!message.getSenderId().equals(userId)) {
+
+        Long ownerId = resolveMessageUserId(message);
+        if (ownerId == null || !ownerId.equals(userId)) {
             return Result.error(ErrorCode.FORBIDDEN);
         }
 
-        messageMapper.deleteById(messageId);
-        log.info("留言删除成功");
+        message.setStatus("deleted");
+        message.setDeleted(1);
+        message.setUpdatedAt(LocalDateTime.now());
+        message.setUpdatedBy(userId);
+        messageMapper.updateById(message);
+
+        log.info("Message deleted");
         return Result.success();
     }
 
     @Override
-    public Result<PageResult<MessageDTO>> listGoodsMessages(Long goodsId, Long page, Long size) {
+    public Result<PageResult<MessageDTO>> listGoodsMessages(Long goodsId, Long page, Long size, Boolean purchasedOnly) {
         Page<Message> pageParam = new Page<>(page, size);
-        LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Message::getGoodsId, goodsId)
-                .isNull(Message::getParentId)
-                .eq(Message::getDeleted, 0)
-                .orderByDesc(Message::getCreatedAt);
-
-        Page<Message> result = messageMapper.selectPage(pageParam, wrapper);
+        Page<Message> result = messageMapper.selectByGoodsId(pageParam, goodsId, purchasedOnly);
 
         List<MessageDTO> dtos = result.getRecords().stream()
                 .map(message -> {
-                    User user = userMapper.selectById(message.getSenderId());
+                    Long senderId = resolveMessageUserId(message);
+                    User user = senderId != null ? userMapper.selectById(senderId) : null;
                     String name = user != null ? user.getNickName() : null;
                     String avatar = user != null ? user.getAvatarUrl() : null;
                     MessageDTO dto = MessageDTO.fromMessage(message, name, avatar);
 
-                    // 加载回复
-                    List<Message> replies = messageMapper.selectReplies(message.getId());
+                    List<MessageDTO> replyDtos = new ArrayList<>();
+                    List<MessageReply> replies = messageReplyMapper.selectByMessageId(message.getId());
                     if (replies != null && !replies.isEmpty()) {
-                        dto.setReplies(replies.stream()
-                                .map(reply -> {
-                                    User replyUser = userMapper.selectById(reply.getSenderId());
-                                    String replyName = replyUser != null ? replyUser.getNickName() : null;
-                                    String replyAvatar = replyUser != null ? replyUser.getAvatarUrl() : null;
-                                    return MessageDTO.fromMessage(reply, replyName, replyAvatar);
+                        for (MessageReply reply : replies) {
+                            replyDtos.add(toReplyDTO(reply));
+                        }
+                    }
+
+                    List<Message> legacyReplies = messageMapper.selectReplies(message.getId());
+                    if (legacyReplies != null && !legacyReplies.isEmpty()) {
+                        replyDtos.addAll(legacyReplies.stream()
+                                .map(legacy -> {
+                                    Long legacySenderId = resolveMessageUserId(legacy);
+                                    User legacyUser = legacySenderId != null ? userMapper.selectById(legacySenderId) : null;
+                                    String legacyName = legacyUser != null ? legacyUser.getNickName() : null;
+                                    String legacyAvatar = legacyUser != null ? legacyUser.getAvatarUrl() : null;
+                                    return MessageDTO.fromMessage(legacy, legacyName, legacyAvatar);
                                 })
                                 .collect(Collectors.toList()));
+                    }
+
+                    if (!replyDtos.isEmpty()) {
+                        replyDtos.sort(Comparator.comparing(MessageDTO::getCreatedAt));
+                        dto.setReplies(replyDtos);
                     }
                     return dto;
                 })
@@ -132,7 +152,176 @@ public class MessageServiceImpl implements MessageService {
         pageResult.setTotal(result.getTotal());
         pageResult.setCurrent(result.getCurrent());
         pageResult.setSize(result.getSize());
+        pageResult.setPages(result.getPages());
 
         return Result.success(pageResult);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<MessageDTO> replyMessage(Long messageId, String content, Long userId) {
+        Message message = messageMapper.selectById(messageId);
+        String status = normalizeStatus(message != null ? message.getStatus() : null);
+        if (message == null || message.getDeleted() == 1 || !"visible".equalsIgnoreCase(status)) {
+            return Result.error(40701, "Message not found or not visible");
+        }
+
+        MessageReply reply = new MessageReply();
+        reply.setMessageId(messageId);
+        reply.setReplierId(userId);
+        reply.setContent(content);
+        reply.setStatus("visible");
+        LocalDateTime now = LocalDateTime.now();
+        reply.setCreatedAt(now);
+        reply.setUpdatedAt(now);
+        reply.setUpdatedBy(userId);
+        messageReplyMapper.insert(reply);
+
+        return Result.success(toReplyDTO(reply));
+    }
+
+    @Override
+    public Result<PageResult<MessageDTO>> listAdminMessages(String status, Long page, Long size) {
+        Page<Message> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<>();
+        wrapper.isNull(Message::getParentId)
+                .orderByDesc(Message::getCreatedAt);
+        if (status != null && !status.isBlank()) {
+            wrapper.eq(Message::getStatus, status);
+        }
+
+        Page<Message> result = messageMapper.selectPage(pageParam, wrapper);
+        List<MessageDTO> dtos = result.getRecords().stream()
+                .map(message -> {
+                    Long senderId = resolveMessageUserId(message);
+                    User user = senderId != null ? userMapper.selectById(senderId) : null;
+                    String name = user != null ? user.getNickName() : null;
+                    String avatar = user != null ? user.getAvatarUrl() : null;
+                    return MessageDTO.fromMessage(message, name, avatar);
+                })
+                .collect(Collectors.toList());
+
+        PageResult<MessageDTO> pageResult = new PageResult<>();
+        pageResult.setRecords(dtos);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setCurrent(result.getCurrent());
+        pageResult.setSize(result.getSize());
+        pageResult.setPages(result.getPages());
+        return Result.success(pageResult);
+    }
+
+    @Override
+    public Result<PageResult<MessageDTO>> listAdminReplies(String status, Long page, Long size) {
+        Page<MessageReply> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<MessageReply> wrapper = new LambdaQueryWrapper<>();
+        if (status != null && !status.isBlank()) {
+            wrapper.eq(MessageReply::getStatus, status);
+        }
+        wrapper.orderByDesc(MessageReply::getCreatedAt);
+
+        Page<MessageReply> result = messageReplyMapper.selectPage(pageParam, wrapper);
+        List<MessageDTO> dtos = result.getRecords().stream()
+                .map(this::toReplyDTO)
+                .collect(Collectors.toList());
+
+        PageResult<MessageDTO> pageResult = new PageResult<>();
+        pageResult.setRecords(dtos);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setCurrent(result.getCurrent());
+        pageResult.setSize(result.getSize());
+        pageResult.setPages(result.getPages());
+        return Result.success(pageResult);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> hideMessage(Long messageId, Long adminId) {
+        Message message = messageMapper.selectById(messageId);
+        String status = normalizeStatus(message != null ? message.getStatus() : null);
+        if (message == null || !"visible".equalsIgnoreCase(status)) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        message.setStatus("hidden");
+        message.setUpdatedAt(LocalDateTime.now());
+        message.setUpdatedBy(adminId);
+        messageMapper.updateById(message);
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> deleteMessageByAdmin(Long messageId, Long adminId) {
+        Message message = messageMapper.selectById(messageId);
+        String status = normalizeStatus(message != null ? message.getStatus() : null);
+        if (message == null || "deleted".equalsIgnoreCase(status)) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        message.setStatus("deleted");
+        message.setDeleted(1);
+        message.setUpdatedAt(LocalDateTime.now());
+        message.setUpdatedBy(adminId);
+        messageMapper.updateById(message);
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> hideReply(Long replyId, Long adminId) {
+        MessageReply reply = messageReplyMapper.selectById(replyId);
+        String status = normalizeStatus(reply != null ? reply.getStatus() : null);
+        if (reply == null || !"visible".equalsIgnoreCase(status)) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        reply.setStatus("hidden");
+        reply.setUpdatedAt(LocalDateTime.now());
+        reply.setUpdatedBy(adminId);
+        messageReplyMapper.updateById(reply);
+        return Result.success();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> deleteReplyByAdmin(Long replyId, Long adminId) {
+        MessageReply reply = messageReplyMapper.selectById(replyId);
+        String status = normalizeStatus(reply != null ? reply.getStatus() : null);
+        if (reply == null || "deleted".equalsIgnoreCase(status)) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+        reply.setStatus("deleted");
+        reply.setUpdatedAt(LocalDateTime.now());
+        reply.setUpdatedBy(adminId);
+        messageReplyMapper.updateById(reply);
+        return Result.success();
+    }
+
+    private Long resolveMessageUserId(Message message) {
+        if (message == null) {
+            return null;
+        }
+        return message.getUserId() != null ? message.getUserId() : message.getSenderId();
+    }
+
+    private MessageDTO toReplyDTO(MessageReply reply) {
+        Long userId = reply.getReplierId();
+        User user = userId != null ? userMapper.selectById(userId) : null;
+        String name = user != null ? user.getNickName() : null;
+        String avatar = user != null ? user.getAvatarUrl() : null;
+
+        MessageDTO dto = new MessageDTO();
+        dto.setId(reply.getId());
+        dto.setParentId(reply.getMessageId());
+        dto.setSenderId(userId);
+        dto.setSenderName(name != null ? name : "User" + userId);
+        dto.setSenderAvatar(avatar);
+        dto.setContent(reply.getContent());
+        dto.setStatus(reply.getStatus());
+        dto.setCreatedAt(reply.getCreatedAt());
+        dto.setUpdatedAt(reply.getUpdatedAt());
+        dto.setUpdatedBy(reply.getUpdatedBy());
+        return dto;
+    }
+
+    private String normalizeStatus(String status) {
+        return status == null ? "visible" : status;
     }
 }

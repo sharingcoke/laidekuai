@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.laidekuai.message.mapper.MessageReplyMapper">
+
+    <resultMap id="BaseResultMap" type="com.laidekuai.message.entity.MessageReply">
+        <id column="id" property="id"/>
+        <result column="message_id" property="messageId"/>
+        <result column="replier_id" property="replierId"/>
+        <result column="content" property="content"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="updated_by" property="updatedBy"/>
+    </resultMap>
+
+    <select id="selectByMessageId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            message_id,
+            replier_id,
+            content,
+            status,
+            created_at,
+            updated_at,
+            updated_by
+        FROM message_reply
+        WHERE message_id = #{messageId}
+          AND status = 'visible'
+        ORDER BY created_at ASC
+    </select>
+
+</mapper>

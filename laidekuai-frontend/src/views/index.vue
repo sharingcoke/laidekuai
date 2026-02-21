@@ -21,7 +21,7 @@ const authStore = useAuthStore()
           <el-dropdown v-if="authStore.isAdmin" class="admin-dropdown" trigger="hover">
             <span class="nav-link admin-link">
               管理端
-              <span class="caret">▾</span>
+              <span class="caret">▼</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -29,13 +29,16 @@ const authStore = useAuthStore()
                   <RouterLink to="/admin/orders">订单管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
-                  <RouterLink to="/admin/goods">商品审核</RouterLink>
+                  <RouterLink to="/admin/goods">商品管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <RouterLink to="/admin/users">用户管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <RouterLink to="/admin/reviews">评价管理</RouterLink>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <RouterLink to="/admin/messages">留言治理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <RouterLink to="/admin/categories">分类管理</RouterLink>

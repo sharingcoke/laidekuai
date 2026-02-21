@@ -38,5 +38,19 @@ public interface MessageService {
      * @param size    每页大小
      * @return 留言列表（含回复）
      */
-    Result<PageResult<MessageDTO>> listGoodsMessages(Long goodsId, Long page, Long size);
+    Result<PageResult<MessageDTO>> listGoodsMessages(Long goodsId, Long page, Long size, Boolean purchasedOnly);
+
+    Result<MessageDTO> replyMessage(Long messageId, String content, Long userId);
+
+    Result<PageResult<MessageDTO>> listAdminMessages(String status, Long page, Long size);
+
+    Result<PageResult<MessageDTO>> listAdminReplies(String status, Long page, Long size);
+
+    Result<Void> hideMessage(Long messageId, Long adminId);
+
+    Result<Void> deleteMessageByAdmin(Long messageId, Long adminId);
+
+    Result<Void> hideReply(Long replyId, Long adminId);
+
+    Result<Void> deleteReplyByAdmin(Long replyId, Long adminId);
 }

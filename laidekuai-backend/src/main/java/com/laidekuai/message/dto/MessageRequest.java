@@ -26,8 +26,4 @@ public class MessageRequest {
     @Size(max = 500, message = "留言内容不能超过500个字符")
     private String content;
 
-    /**
-     * 父消息ID（回复时使用）
-     */
-    private Long parentId;
 }

@@ -132,6 +132,13 @@ const routes = [
     meta: { title: '评价管理 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
+    path: '/admin/messages',
+    name: 'AdminMessages',
+    component: () => import('@/views/admin/MessageManage.vue'),
+    meta: { title: '???? - ????', requiresAuth: true, requiresAdmin: true }
+  },
+
+  {
     path: '/admin/categories',
     name: 'AdminCategories',
     component: () => import('@/views/admin/CategoryManage.vue'),

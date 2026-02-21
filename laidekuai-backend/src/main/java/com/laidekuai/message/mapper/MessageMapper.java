@@ -1,6 +1,7 @@
 package com.laidekuai.message.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.message.entity.Message;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,7 +22,9 @@ public interface MessageMapper extends BaseMapper<Message> {
      * @param goodsId 商品ID
      * @return 留言列表
      */
-    List<Message> selectByGoodsId(@Param("goodsId") Long goodsId);
+    Page<Message> selectByGoodsId(Page<Message> page,
+                                  @Param("goodsId") Long goodsId,
+                                  @Param("purchasedOnly") Boolean purchasedOnly);
 
     /**
      * 查询留言的回复列表

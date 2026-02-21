@@ -1,6 +1,7 @@
 package com.laidekuai.message.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -28,6 +29,9 @@ public class Message {
      */
     private Long goodsId;
 
+    @TableField("user_id")
+    private Long userId;
+
     /**
      * 发送者ID
      */
@@ -43,10 +47,19 @@ public class Message {
      */
     private String content;
 
+    private String status;
+
+    @TableField("is_purchased")
+    private Integer isPurchased;
+
     /**
      * 创建时间
      */
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private Long updatedBy;
 
     /**
      * 逻辑删除标记

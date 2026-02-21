@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import goodsApi from '@/api/goods'
 import cartApi from '@/api/cart'
 import reviewApi from '@/api/review'
+import messageApi from '@/api/message'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ShoppingCart, ChatDotRound } from '@element-plus/icons-vue'
 
@@ -28,6 +29,17 @@ const reviewQuery = reactive({
 })
 const replyInputs = reactive({})
 const replySubmitting = reactive({})
+const messageLoading = ref(false)
+const messageList = ref([])
+const messageTotal = ref(0)
+const messageContent = ref('')
+const messageQuery = reactive({
+  page: 1,
+  size: 10,
+  purchasedOnly: false
+})
+const messageReplyInputs = reactive({})
+const messageReplySubmitting = reactive({})
 
 // 计算属性
 const imageUrls = computed(() => {
@@ -74,6 +86,7 @@ const fetchDetail = async () => {
       goods.value = res.data
       fetchReviews()
       fetchRating()
+      fetchMessages()
     } else {
       ElMessage.error(res.message || '获取商品详情失败')
       router.push('/goods')
@@ -118,6 +131,85 @@ const fetchRating = async () => {
 const handleReviewPageChange = (page) => {
   reviewQuery.page = page
   fetchReviews()
+}
+
+const fetchMessages = async () => {
+  messageLoading.value = true
+  try {
+    const params = {
+      page: messageQuery.page,
+      size: messageQuery.size
+    }
+    if (messageQuery.purchasedOnly) {
+      params.purchased_only = true
+    }
+    const res = await messageApi.listGoods(goodsId, params)
+    if (res.code === 0) {
+      messageList.value = res.data.records
+      messageTotal.value = res.data.total
+    }
+  } catch (error) {
+    console.error('获取留言失败:', error)
+  } finally {
+    messageLoading.value = false
+  }
+}
+
+const handleMessagePageChange = (page) => {
+  messageQuery.page = page
+  fetchMessages()
+}
+
+const handleMessageFilterChange = () => {
+  messageQuery.page = 1
+  fetchMessages()
+}
+
+const submitMessage = async () => {
+  if (!authStore.isLoggedIn) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+  const content = messageContent.value.trim()
+  if (!content) {
+    ElMessage.warning('请输入留言内容')
+    return
+  }
+  try {
+    const res = await messageApi.create(goodsId, content)
+    if (res.code === 0) {
+      ElMessage.success('留言已发布')
+      messageContent.value = ''
+      fetchMessages()
+    }
+  } catch (error) {
+    console.error('发布留言失败:', error)
+  }
+}
+
+const submitMessageReply = async (message) => {
+  if (!authStore.isLoggedIn) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+  const content = (messageReplyInputs[message.id] || '').trim()
+  if (!content) {
+    ElMessage.warning('请输入回复内容')
+    return
+  }
+  messageReplySubmitting[message.id] = true
+  try {
+    const res = await messageApi.reply(message.id, content)
+    if (res.code === 0) {
+      ElMessage.success('回复成功')
+      messageReplyInputs[message.id] = ''
+      fetchMessages()
+    }
+  } catch (error) {
+    console.error('回复留言失败:', error)
+  } finally {
+    messageReplySubmitting[message.id] = false
+  }
 }
 
 const submitReply = async (review) => {
@@ -433,6 +525,106 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- 留言板 -->
+      <div class="detail-message-section panel-card">
+        <div class="section-header">
+          <div>
+            <h3>留言板</h3>
+            <p class="section-desc">登录用户可留言与回复，已购买用户将有标识。</p>
+          </div>
+          <div class="filter-box">
+            <el-checkbox
+              v-model="messageQuery.purchasedOnly"
+              @change="handleMessageFilterChange"
+            >
+              已购买用户
+            </el-checkbox>
+          </div>
+        </div>
+
+        <div class="message-compose">
+          <el-input
+            v-model="messageContent"
+            type="textarea"
+            :rows="3"
+            :disabled="!authStore.isLoggedIn"
+            placeholder="说点什么吧..."
+          />
+          <div class="compose-actions">
+            <el-button
+              type="primary"
+              :disabled="!authStore.isLoggedIn"
+              @click="submitMessage"
+            >
+              发布留言
+            </el-button>
+          </div>
+          <el-alert
+            v-if="!authStore.isLoggedIn"
+            title="登录后可留言"
+            type="info"
+            :closable="false"
+            show-icon
+          />
+        </div>
+
+        <div class="message-list" v-loading="messageLoading">
+          <el-empty v-if="!messageLoading && messageList.length === 0" description="暂无留言" />
+          <template v-else>
+            <div class="message-card" v-for="message in messageList" :key="message.id">
+              <div class="message-head">
+                <span class="buyer">{{ message.senderName || `用户${message.senderId}` }}</span>
+                <el-tag
+                  v-if="Number(message.isPurchased) === 1"
+                  type="success"
+                  size="small"
+                >
+                  已购买
+                </el-tag>
+                <span class="time">{{ message.createdAt }}</span>
+              </div>
+              <div class="message-content">{{ message.content }}</div>
+              <div v-if="message.replies && message.replies.length" class="message-replies">
+                <div class="reply-item" v-for="reply in message.replies" :key="reply.id">
+                  <div class="reply-head">
+                    <span class="reply-name">{{ reply.senderName || `用户${reply.senderId}` }}</span>
+                    <span class="reply-time">{{ reply.createdAt }}</span>
+                  </div>
+                  <div class="reply-content">{{ reply.content }}</div>
+                </div>
+              </div>
+              <div v-if="authStore.isLoggedIn" class="message-reply-form">
+                <el-input
+                  v-model="messageReplyInputs[message.id]"
+                  type="textarea"
+                  :rows="2"
+                  placeholder="回复该留言..."
+                />
+                <el-button
+                  type="primary"
+                  size="small"
+                  :loading="messageReplySubmitting[message.id]"
+                  @click="submitMessageReply(message)"
+                >
+                  回复
+                </el-button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="pagination-container" v-if="messageTotal > 0">
+          <el-pagination
+            v-model:current-page="messageQuery.page"
+            v-model:page-size="messageQuery.size"
+            layout="prev, pager, next, total"
+            :total="messageTotal"
+            @current-change="handleMessagePageChange"
+            background
+          />
+        </div>
+      </div>
+
     </div>
     <el-empty v-else description="商品不存在或已删除" />
   </div>
@@ -698,6 +890,99 @@ onMounted(() => {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.detail-message-section {
+  margin-top: 24px;
+  padding: 26px 28px;
+}
+
+.message-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.compose-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.message-list {
+  min-height: 220px;
+}
+
+.message-card {
+  padding: 16px 18px;
+  border: 1px solid var(--ldk-border);
+  border-radius: var(--ldk-radius-sm);
+  background: var(--ldk-card-bg);
+  margin-bottom: 12px;
+}
+
+.message-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ldk-text-secondary);
+  margin-bottom: 8px;
+}
+
+.message-head .buyer {
+  font-weight: 600;
+  color: var(--ldk-text-primary);
+}
+
+.message-head .time {
+  margin-left: auto;
+}
+
+.message-content {
+  font-size: 14px;
+  color: var(--ldk-text-regular);
+}
+
+.message-replies {
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--ldk-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ldk-text-secondary);
+}
+
+.reply-name {
+  font-weight: 500;
+  color: var(--ldk-text-primary);
+}
+
+.reply-content {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ldk-text-regular);
+}
+
+.message-reply-form {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-box {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 

@@ -21,7 +21,11 @@ public class MessageDTO {
     private String senderAvatar;
     private Long parentId;
     private String content;
+    private String status;
+    private Integer isPurchased;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Long updatedBy;
     private List<MessageDTO> replies;
 
     /**
@@ -29,14 +33,19 @@ public class MessageDTO {
      */
     public static MessageDTO fromMessage(Message message, String senderName, String senderAvatar) {
         MessageDTO dto = new MessageDTO();
+        Long senderId = message.getUserId() != null ? message.getUserId() : message.getSenderId();
         dto.setId(message.getId());
         dto.setGoodsId(message.getGoodsId());
-        dto.setSenderId(message.getSenderId());
-        dto.setSenderName(senderName != null ? senderName : "用户" + message.getSenderId());
+        dto.setSenderId(senderId);
+        dto.setSenderName(senderName != null ? senderName : "User" + senderId);
         dto.setSenderAvatar(senderAvatar);
         dto.setParentId(message.getParentId());
         dto.setContent(message.getContent());
+        dto.setStatus(message.getStatus());
+        dto.setIsPurchased(message.getIsPurchased());
         dto.setCreatedAt(message.getCreatedAt());
+        dto.setUpdatedAt(message.getUpdatedAt());
+        dto.setUpdatedBy(message.getUpdatedBy());
         return dto;
     }
 }
