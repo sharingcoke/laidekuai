@@ -40,7 +40,7 @@ class OrderSchedulerTest {
         Order canceled = new Order();
         canceled.setId(1L);
         canceled.setStatus("CANCELED");
-        canceled.setCancelReason("TIMEOUT_CANCELED");
+        canceled.setCancelReason("TIMEOUT");
         when(orderMapper.selectById(1L)).thenReturn(canceled);
 
         OrderScheduler scheduler = new OrderScheduler(orderMapper, orderService);

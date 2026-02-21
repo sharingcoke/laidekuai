@@ -108,7 +108,7 @@ class MessageServiceTest {
 
         Result<MessageDTO> result = messageService.replyMessage(5L, "hello", 11L);
 
-        assertEquals(40701, result.getCode());
+        assertEquals(ErrorCode.NOT_FOUND.getCode(), result.getCode());
         verify(messageReplyMapper, never()).insert(any(MessageReply.class));
     }
 

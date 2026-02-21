@@ -33,7 +33,7 @@ class FileControllerTest {
 
     @Test
     void uploadSuccess() throws Exception {
-        when(fileStorageService.upload(any())).thenReturn(Result.success("/files/20260221/abc.jpg"));
+        when(fileStorageService.upload(any())).thenReturn(Result.success("/static/files/20260221/abc.jpg"));
 
         MockMultipartFile file = new MockMultipartFile(
                 "file",
@@ -45,12 +45,12 @@ class FileControllerTest {
         mockMvc.perform(multipart("/files/upload").file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data").value("/files/20260221/abc.jpg"));
+                .andExpect(jsonPath("$.data").value("/static/files/20260221/abc.jpg"));
     }
 
     @Test
     void uploadRejectsEmptyFile() throws Exception {
-        when(fileStorageService.upload(any())).thenReturn(Result.error(400, "文件不能为空"));
+        when(fileStorageService.upload(any())).thenReturn(Result.error(40001, "文件不能为空"));
 
         MockMultipartFile file = new MockMultipartFile(
                 "file",
@@ -61,7 +61,7 @@ class FileControllerTest {
 
         mockMvc.perform(multipart("/files/upload").file(file))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.code").value(40001))
                 .andExpect(jsonPath("$.message").value("文件不能为空"));
     }
 }

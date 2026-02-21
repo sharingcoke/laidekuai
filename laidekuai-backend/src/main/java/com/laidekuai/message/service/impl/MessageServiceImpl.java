@@ -91,7 +91,7 @@ public class MessageServiceImpl implements MessageService {
         Message message = messageMapper.selectById(messageId);
         String status = normalizeStatus(message != null ? message.getStatus() : null);
         if (message == null || "deleted".equalsIgnoreCase(status) || message.getDeleted() == 1) {
-            return Result.error(40702, "Message not found");
+            return Result.error(ErrorCode.NOT_FOUND);
         }
 
         Long ownerId = resolveMessageUserId(message);
@@ -212,7 +212,7 @@ public class MessageServiceImpl implements MessageService {
         Message message = messageMapper.selectById(messageId);
         String status = normalizeStatus(message != null ? message.getStatus() : null);
         if (message == null || message.getDeleted() == 1 || !"visible".equalsIgnoreCase(status)) {
-            return Result.error(40701, "Message not found or not visible");
+            return Result.error(ErrorCode.NOT_FOUND);
         }
 
         MessageReply reply = new MessageReply();

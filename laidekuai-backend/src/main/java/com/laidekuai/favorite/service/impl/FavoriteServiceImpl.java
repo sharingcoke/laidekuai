@@ -46,7 +46,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         // 检查是否已收藏
         Favorite existing = favoriteMapper.selectByUserAndGoods(userId, goodsId);
         if (existing != null) {
-            return Result.error(40601, "已收藏该商品");
+            return Result.error(ErrorCode.CONFLICT.getCode(), "已收藏该商品");
         }
 
         // 添加收藏
@@ -67,7 +67,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
         Favorite existing = favoriteMapper.selectByUserAndGoods(userId, goodsId);
         if (existing == null) {
-            return Result.error(40602, "未收藏该商品");
+            return Result.error(ErrorCode.NOT_FOUND.getCode(), "未收藏该商品");
         }
 
         favoriteMapper.deleteById(existing.getId());

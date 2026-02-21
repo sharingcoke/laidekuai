@@ -2,6 +2,7 @@ package com.laidekuai.order.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.laidekuai.address.entity.Address;
 import com.laidekuai.address.mapper.AddressMapper;
@@ -106,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
             // 检查是否购买自己的商品
             if (goods.getSellerId().equals(userId)) {
                 log.warn("用户 {} 不能购买自己的商品 {}", userId, goods.getId());
-                return Result.error(40307, "不能购买自己的商品");
+                return Result.error(ErrorCode.FORBIDDEN.getCode(), "不能购买自己的商品");
             }
         }
 
@@ -565,7 +566,7 @@ public class OrderServiceImpl implements OrderService {
             orderMapper.updateById(order);
             orderItemMapper.updateOrderStatusByOrderId(orderId, "DISPUTED");
             log.info("订单 {} 触发争议，退款申请次数已达 {}", order.getOrderNo(), refundCount + 1);
-            return Result.error(40403, "已触发争议，请等待平台处理");
+            return Result.error(ErrorCode.CONFLICT.getCode(), "已触发争议，请等待平台处理");
         }
 
         // 鏇存柊璁㈠崟鐘舵€佷负閫€娆句腑
@@ -598,28 +599,39 @@ public class OrderServiceImpl implements OrderService {
             return Result.error(ErrorCode.ORDER_STATUS_ERROR);
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        UpdateWrapper<Order> wrapper = new UpdateWrapper<>();
+        wrapper.eq("id", orderId)
+                .eq("deleted", 0)
+                .eq("status", "REFUNDING");
+
         if (approved) {
-            // 鍚屾剰閫€娆撅細閲婃斁搴撳瓨锛屾洿鏂扮姸鎬?
+            wrapper.set("status", "REFUNDED")
+                    .set("cancel_reason", "BUYER_REFUND")
+                    .set("cancel_time", now)
+                    .set("updated_at", now);
+        } else {
+            wrapper.set("status", "PAID")
+                    .set("updated_at", now);
+        }
+
+        int updated = orderMapper.update(null, wrapper);
+        if (updated == 0) {
+            return Result.error(ErrorCode.CONFLICT);
+        }
+
+        if (approved) {
             List<OrderItem> items = orderItemMapper.selectByOrderId(orderId);
             for (OrderItem item : items) {
                 goodsMapper.releaseStock(item.getGoodsId(), item.getQuantity());
-                log.debug("閲婃斁鍟嗗搧 {} 搴撳瓨: {}", item.getGoodsId(), item.getQuantity());
+                log.debug("释放商品 {} 库存: {}", item.getGoodsId(), item.getQuantity());
             }
-
-            order.setStatus("REFUNDED");
-            order.setCancelReason("BUYER_REFUND");
-            order.setCancelTime(LocalDateTime.now());
             orderItemMapper.updateStatusByOrderId(orderId, "REFUNDED");
             log.info("订单 {} 退款成功", order.getOrderNo());
         } else {
-            // 鎷掔粷閫€娆撅細鎭㈠涓哄凡鏀粯鐘舵€?
-            order.setStatus("PAID");
             orderItemMapper.updateOrderStatusByOrderId(orderId, "PAID");
-            log.info("璁㈠崟 {} 閫€娆捐鎷掔粷", order.getOrderNo());
+            log.info("订单 {} 退款被拒绝", order.getOrderNo());
         }
-
-        order.setUpdatedAt(LocalDateTime.now());
-        orderMapper.updateById(order);
 
         return Result.success();
     }
@@ -699,7 +711,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        int affected = orderMapper.markCanceledIfPending(orderId, "TIMEOUT_CANCELED", now, now);
+        int affected = orderMapper.markCanceledIfPending(orderId, "TIMEOUT", now, now);
         if (affected == 0) {
             return Result.success();
         }

@@ -42,6 +42,7 @@ public class OrderScheduler {
         wrapper.eq("status", "PENDING_PAY")
                .eq("deleted", 0)
                .apply("created_at <= DATE_SUB(NOW(), INTERVAL {0} MINUTE)", timeoutMinutes)
+               .apply("updated_at <= DATE_SUB(NOW(), INTERVAL 1 MINUTE)")
                .orderByAsc("created_at")
                .last("LIMIT " + SCAN_LIMIT);
 
@@ -58,7 +59,7 @@ public class OrderScheduler {
                     Order refreshed = orderMapper.selectById(order.getId());
                     if (refreshed != null
                             && "CANCELED".equals(refreshed.getStatus())
-                            && "TIMEOUT_CANCELED".equals(refreshed.getCancelReason())) {
+                            && "TIMEOUT".equals(refreshed.getCancelReason())) {
                         canceledCount++;
                     }
                 }

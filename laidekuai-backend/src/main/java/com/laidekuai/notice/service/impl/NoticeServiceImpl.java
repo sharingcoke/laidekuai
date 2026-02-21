@@ -85,7 +85,7 @@ public class NoticeServiceImpl implements NoticeService {
     public Result<Void> updateNotice(Long id, String title, String content) {
         Notice notice = noticeMapper.selectById(id);
         if (notice == null || notice.getDeleted() == 1) {
-            return Result.error(404, "公告不存在");
+            return Result.error(ErrorCode.NOT_FOUND);
         }
         if (title != null) notice.setTitle(title);
         if (content != null) notice.setContent(content);
@@ -106,7 +106,7 @@ public class NoticeServiceImpl implements NoticeService {
     public Result<Void> publishNotice(Long id) {
         Notice notice = noticeMapper.selectById(id);
         if (notice == null || notice.getDeleted() == 1) {
-            return Result.error(404, "公告不存在");
+            return Result.error(ErrorCode.NOT_FOUND);
         }
         notice.setStatus("PUBLISHED");
         notice.setPublishedAt(LocalDateTime.now());
@@ -120,7 +120,7 @@ public class NoticeServiceImpl implements NoticeService {
     public Result<Void> offlineNotice(Long id) {
         Notice notice = noticeMapper.selectById(id);
         if (notice == null || notice.getDeleted() == 1) {
-            return Result.error(404, "公告不存在");
+            return Result.error(ErrorCode.NOT_FOUND);
         }
         notice.setStatus("OFFLINE");
         notice.setUpdatedAt(LocalDateTime.now());

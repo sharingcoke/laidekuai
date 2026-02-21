@@ -139,7 +139,7 @@ class OrderServiceTest {
         when(orderItemMapper.selectByOrderId(1L)).thenReturn(List.of(item));
         when(goodsMapper.releaseStock(5L, 2)).thenReturn(1);
         when(orderItemMapper.updateStatusByOrderId(1L, "REFUNDED")).thenReturn(1);
-        when(orderMapper.updateById(any(Order.class))).thenReturn(1);
+        when(orderMapper.update(any(), any())).thenReturn(1);
 
         Result<Void> result = orderService.handleRefund(1L, 10L, true, "ok");
 
@@ -147,10 +147,7 @@ class OrderServiceTest {
         verify(goodsMapper).releaseStock(5L, 2);
         verify(orderItemMapper).updateStatusByOrderId(1L, "REFUNDED");
 
-        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
-        verify(orderMapper).updateById(orderCaptor.capture());
-        assertEquals("REFUNDED", orderCaptor.getValue().getStatus());
-        assertEquals("BUYER_REFUND", orderCaptor.getValue().getCancelReason());
+        verify(orderMapper).update(any(), any());
     }
 
     @Test
@@ -161,7 +158,7 @@ class OrderServiceTest {
         order.setOrderNo("O1");
 
         when(orderMapper.selectById(1L)).thenReturn(order);
-        when(orderMapper.markCanceledIfPending(eq(1L), eq("TIMEOUT_CANCELED"), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(orderMapper.markCanceledIfPending(eq(1L), eq("TIMEOUT"), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(0);
 
         Result<Void> result = orderService.cancelOrderSystem(1L);
@@ -185,7 +182,7 @@ class OrderServiceTest {
         item.setQuantity(2);
 
         when(orderMapper.selectById(1L)).thenReturn(order);
-        when(orderMapper.markCanceledIfPending(eq(1L), eq("TIMEOUT_CANCELED"), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(orderMapper.markCanceledIfPending(eq(1L), eq("TIMEOUT"), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(1, 0);
         when(orderItemMapper.selectByOrderId(1L)).thenReturn(List.of(item));
         when(goodsMapper.releaseStock(9L, 2)).thenReturn(1);

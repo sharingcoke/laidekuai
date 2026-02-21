@@ -38,7 +38,7 @@ class FileStorageServiceTest {
         Result<String> result = service.upload(file);
         assertEquals(0, result.getCode());
         String url = result.getData();
-        assertTrue(url.startsWith("/files/"));
+        assertTrue(url.startsWith("/static/files/"));
 
         String dateDir = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
         File saved = new File(tempDir.toFile(), dateDir + File.separator + url.substring(url.lastIndexOf("/") + 1));
@@ -60,7 +60,7 @@ class FileStorageServiceTest {
         );
 
         Result<String> result = service.upload(file);
-        assertEquals(400, result.getCode());
+        assertEquals(40001, result.getCode());
     }
 
     @Test
@@ -78,7 +78,7 @@ class FileStorageServiceTest {
         );
 
         Result<String> result = service.upload(file);
-        assertEquals(400, result.getCode());
+        assertEquals(40001, result.getCode());
     }
 
     @Test
@@ -96,7 +96,7 @@ class FileStorageServiceTest {
         );
 
         Result<String> result = service.upload(file);
-        assertEquals(400, result.getCode());
+        assertEquals(40001, result.getCode());
     }
 
     private static void setField(Object target, String fieldName, Object value) throws Exception {

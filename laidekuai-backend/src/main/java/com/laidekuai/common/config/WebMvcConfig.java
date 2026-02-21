@@ -23,8 +23,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 确保路径以/结尾
         String path = uploadPath.endsWith("/") ? uploadPath : uploadPath + "/";
         
-        // 映射 /files/** 到本地上传目录
-        registry.addResourceHandler("/files/**")
+        // 映射 /static/files/** 到本地上传目录
+        registry.addResourceHandler("/static/files/**")
                 .addResourceLocations("file:" + new File(path).getAbsolutePath() + "/");
     }
 }

@@ -19,7 +19,7 @@ test.describe('goods pages', () => {
                 id: 1,
                 title: '二手手机',
                 price: 1999,
-                imageUrls: JSON.stringify(['/files/20260221/a.jpg'])
+                imageUrls: JSON.stringify(['/static/files/20260221/a.jpg'])
               }
             ],
             total: 1
@@ -65,7 +65,7 @@ test.describe('goods pages', () => {
             stock: 3,
             status: 'ON_SHELF',
             sellerId: 10,
-            imageUrls: JSON.stringify(['/files/20260221/a.jpg']),
+            imageUrls: JSON.stringify(['/static/files/20260221/a.jpg']),
             detail: '成色良好'
           }
         })
@@ -110,7 +110,7 @@ test.describe('goods pages', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ code: 0, message: 'ok', data: '/files/20260221/upload.jpg' })
+        body: JSON.stringify({ code: 0, message: 'ok', data: '/static/files/20260221/upload.jpg' })
       });
     });
 

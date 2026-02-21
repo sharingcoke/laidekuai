@@ -1,5 +1,6 @@
 package com.laidekuai.user.controller;
 
+import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.LoginRequest;
 import com.laidekuai.common.dto.RegisterRequest;
 import com.laidekuai.common.dto.Result;
@@ -58,14 +59,14 @@ public class AuthController {
         // 从请求头获取token
         String token = request.getHeader("Authorization");
         if (token == null || !token.startsWith("Bearer ")) {
-            return Result.error(40101, "未登录");
+            return Result.error(ErrorCode.UNAUTHORIZED);
         }
 
         token = token.substring(7); // 去掉 "Bearer " 前缀
 
         // 验证token
         if (!jwtUtil.validateToken(token)) {
-            return Result.error(40105, "Token已过期");
+            return Result.error(ErrorCode.TOKEN_EXPIRED);
         }
 
         // 从token中获取用户ID

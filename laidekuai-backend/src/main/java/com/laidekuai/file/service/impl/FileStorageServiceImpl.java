@@ -1,5 +1,6 @@
 package com.laidekuai.file.service.impl;
 
+import com.laidekuai.common.dto.ErrorCode;
 import com.laidekuai.common.dto.Result;
 import com.laidekuai.file.service.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,16 +35,16 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public Result<String> upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return Result.error(400, "文件不能为空");
+            return Result.error(ErrorCode.VALIDATION_FAILED.getCode(), "文件不能为空");
         }
 
         if (file.getSize() > maxSize) {
-            return Result.error(400, "文件大小超过限制");
+            return Result.error(ErrorCode.FILE_SIZE_EXCEEDED.getCode(), "文件大小超过限制");
         }
 
         String extension = getExtension(file.getOriginalFilename());
         if (extension.isEmpty() || !getAllowedTypes().contains(extension)) {
-            return Result.error(400, "不支持的文件类型: " + extension);
+            return Result.error(ErrorCode.FILE_TYPE_ERROR.getCode(), "不支持的文件类型: " + extension);
         }
 
         try {
@@ -56,11 +57,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             Files.copy(file.getInputStream(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             log.info("文件上传成功: {}", destFile.getAbsolutePath());
-            String url = "/files/" + dateDir + "/" + newFilename;
+            String url = "/static/files/" + dateDir + "/" + newFilename;
             return Result.success(url);
         } catch (IOException e) {
             log.error("文件上传失败", e);
-            return Result.error(500, "文件上传失败");
+            return Result.error(ErrorCode.FILE_UPLOAD_FAILED.getCode(), "文件上传失败");
         }
     }
 

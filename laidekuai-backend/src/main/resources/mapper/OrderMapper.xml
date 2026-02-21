@@ -63,6 +63,7 @@
             updated_at = #{updatedAt}
         WHERE id = #{orderId}
           AND status = 'PENDING_PAY'
+          AND updated_at <= DATE_SUB(NOW(), INTERVAL 1 MINUTE)
           AND deleted = 0
     </update>
 

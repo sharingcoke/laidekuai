@@ -5,7 +5,7 @@ test('upload returns relative file path', async ({ page }) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ code: 0, message: 'ok', data: '/files/20260221/abc.jpg' })
+      body: JSON.stringify({ code: 0, message: 'ok', data: '/static/files/20260221/abc.jpg' })
     });
   });
 
@@ -39,5 +39,5 @@ test('upload returns relative file path', async ({ page }) => {
     page.waitForResponse('**/api/files/upload'),
     page.click('#upload')
   ]);
-  await expect(page.locator('#result')).toHaveText('/files/20260221/abc.jpg');
+  await expect(page.locator('#result')).toHaveText('/static/files/20260221/abc.jpg');
 });
