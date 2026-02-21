@@ -15,6 +15,16 @@ export default {
     },
 
     /**
+     * 获取公开分类树
+     */
+    listTree() {
+        return request({
+            url: '/categories',
+            method: 'get'
+        })
+    },
+
+    /**
      * 新增分类
      */
     create(data) {

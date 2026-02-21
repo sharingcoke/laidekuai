@@ -5,7 +5,7 @@ const baseURL = process.env.BASE_URL || 'http://localhost:5173';
 test.describe('goods pages', () => {
   const lastMessage = (page) => page.locator('.el-message__content').last();
 
-  test('goods list renders items', async ({ page }) => {
+  test('goods list renders items and category select works', async ({ page }) => {
     await page.route(/\/api\/goods(\?|$)/, async route => {
       await route.fulfill({
         status: 200,
@@ -28,9 +28,26 @@ test.describe('goods pages', () => {
       });
     });
 
+    await page.route(/\/api\/categories(\?|$)/, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 0,
+          message: 'ok',
+          data: [
+            { id: 1, name: '手机', children: [{ id: 11, name: '苹果' }] }
+          ]
+        })
+      });
+    });
+
     await page.goto(`${baseURL}/goods`);
     await expect(page.locator('.goods-card')).toHaveCount(1);
     await expect(page.locator('.goods-title')).toHaveText('二手手机');
+
+    await page.locator('.el-cascader').click();
+    await expect(page.getByText('手机', { exact: true })).toBeVisible();
   });
 
   test('goods detail renders main info', async ({ page }) => {
