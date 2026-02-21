@@ -211,7 +211,7 @@ const routes = [
   {
     path: '/admin/audit-logs',
     name: 'AdminAuditLogs',
-    component: () => import('@/views/admin/AuditLog.vue'),
+    component: () => import('@/views/admin/AuditLogManage.vue'),
     meta: { title: '审计日志 - 管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {

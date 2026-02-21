@@ -54,6 +54,23 @@ test.describe('admin pages', () => {
       });
     });
 
+    await page.route('**/api/admin/audit-logs**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 0,
+          message: 'ok',
+          data: {
+            records: [
+              { id: 1, orderNo: 'NO100', action: 'REFUND_APPROVE', operator: '管理员', operatorRole: 'ADMIN', remark: 'ok', createdAt: '2026-02-22 09:00' }
+            ],
+            total: 1
+          }
+        })
+      });
+    });
+
     await page.route('**/api/admin/disputes**', async route => {
       await route.fulfill({
         status: 200,
@@ -84,6 +101,10 @@ test.describe('admin pages', () => {
 
     await page.goto(`${baseURL}/admin/notices`);
     await expect(page.getByText('公告管理')).toBeVisible();
+
+    await page.goto(`${baseURL}/admin/audit-logs`);
+    await expect(page.getByText('审计日志')).toBeVisible();
+    await expect(page.getByText('NO100')).toBeVisible();
   });
 
   test('non-admin is redirected away from admin pages', async ({ page }) => {
