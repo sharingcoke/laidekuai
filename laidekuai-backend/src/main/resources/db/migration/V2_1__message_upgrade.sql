@@ -1,11 +1,11 @@
 -- MESSAGE-01: message compatibility upgrade + message_reply table
 
 -- 1) Extend message table (compatibility-first, keep legacy columns)
-ALTER TABLE message ADD COLUMN user_id BIGINT NULL;
-ALTER TABLE message ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'visible';
-ALTER TABLE message ADD COLUMN is_purchased TINYINT NOT NULL DEFAULT 0;
-ALTER TABLE message ADD COLUMN updated_at DATETIME NULL;
-ALTER TABLE message ADD COLUMN updated_by BIGINT NULL;
+ALTER TABLE message ADD COLUMN IF NOT EXISTS user_id BIGINT NULL;
+ALTER TABLE message ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'visible';
+ALTER TABLE message ADD COLUMN IF NOT EXISTS is_purchased TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE message ADD COLUMN IF NOT EXISTS updated_at DATETIME NULL;
+ALTER TABLE message ADD COLUMN IF NOT EXISTS updated_by BIGINT NULL;
 
 -- 2) Minimal backfill for compatibility
 UPDATE message
@@ -31,13 +31,13 @@ WHERE updated_by IS NULL
   AND user_id IS NOT NULL;
 
 -- 3) Indexes (non-destructive, keep existing indexes)
-CREATE INDEX idx_message_user_id ON message(user_id);
-CREATE INDEX idx_message_status ON message(status);
-CREATE INDEX idx_message_is_purchased ON message(is_purchased);
-CREATE INDEX idx_message_goods_status ON message(goods_id, status, is_purchased, created_at);
+CREATE INDEX IF NOT EXISTS idx_message_user_id ON message(user_id);
+CREATE INDEX IF NOT EXISTS idx_message_status ON message(status);
+CREATE INDEX IF NOT EXISTS idx_message_is_purchased ON message(is_purchased);
+CREATE INDEX IF NOT EXISTS idx_message_goods_status ON message(goods_id, status, is_purchased, created_at);
 
 -- 4) Create message_reply table
-CREATE TABLE message_reply (
+CREATE TABLE IF NOT EXISTS message_reply (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   message_id BIGINT NOT NULL,
   replier_id BIGINT NOT NULL,
