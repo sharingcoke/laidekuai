@@ -125,7 +125,29 @@ const routes = [
     component: () => import('@/views/goods/GoodsPublish.vue'),
     meta: { title: '发布商品 - 来得快', requiresAuth: true }
   },
+    {
+    path: '/admin',
+    redirect: '/admin/dashboard'
+  },
   {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: () => import('@/views/admin/Dashboard.vue'),
+    meta: { title: '管理员首页 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/disputes',
+    name: 'AdminDisputes',
+    component: () => import('@/views/admin/DisputeList.vue'),
+    meta: { title: '争议列表 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/system',
+    name: 'AdminSystemConfig',
+    component: () => import('@/views/admin/SystemConfig.vue'),
+    meta: { title: '系统配置 - 管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+{
     path: '/admin/users',
     name: 'AdminUsers',
     component: () => import('@/views/admin/UserList.vue'),
@@ -236,4 +258,5 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
 

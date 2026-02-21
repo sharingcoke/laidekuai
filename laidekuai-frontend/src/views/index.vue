@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -25,7 +25,10 @@ const authStore = useAuthStore()
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                
                 <el-dropdown-item>
+                  <RouterLink to="/admin/dashboard">管理员首页</RouterLink>
+                </el-dropdown-item><el-dropdown-item>
                   <RouterLink to="/admin/orders">订单管理</RouterLink>
                 </el-dropdown-item>
                 <el-dropdown-item>
@@ -48,7 +51,13 @@ const authStore = useAuthStore()
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <RouterLink to="/admin/audit-logs">审计日志</RouterLink>
+                </el-dropdown-item>                <el-dropdown-item>
+                  <RouterLink to="/admin/disputes">争议列表</RouterLink>
                 </el-dropdown-item>
+                <el-dropdown-item>
+                  <RouterLink to="/admin/system">系统配置</RouterLink>
+                </el-dropdown-item>
+
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -334,3 +343,4 @@ const authStore = useAuthStore()
   }
 }
 </style>
+
