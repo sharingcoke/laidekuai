@@ -22,6 +22,14 @@ public interface NoticeService {
     Result<PageResult<NoticeDTO>> listPublishedNotices(Long page, Long size);
 
     /**
+     * 获取已发布公告详情（公开）
+     *
+     * @param id 公告ID
+     * @return 公告详情
+     */
+    Result<NoticeDTO> getPublishedNotice(Long id);
+
+    /**
      * 获取所有公告列表（管理员）
      *
      * @param page 页码

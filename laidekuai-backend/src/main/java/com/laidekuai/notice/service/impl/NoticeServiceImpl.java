@@ -44,6 +44,20 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
+    public Result<NoticeDTO> getPublishedNotice(Long id) {
+        Notice notice = noticeMapper.selectById(id);
+        if (notice == null || notice.getDeleted() == 1) {
+            return Result.error(ErrorCode.NOT_FOUND);
+        }
+        if (!"PUBLISHED".equals(notice.getStatus())) {
+            return Result.error(ErrorCode.NOT_FOUND);
+        }
+        NoticeDTO dto = new NoticeDTO();
+        BeanUtils.copyProperties(notice, dto);
+        return Result.success(dto);
+    }
+
+    @Override
     public Result<PageResult<NoticeDTO>> listAllNotices(Long page, Long size) {
         Page<Notice> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<Notice> wrapper = new LambdaQueryWrapper<>();

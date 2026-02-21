@@ -6,6 +6,7 @@ import com.laidekuai.notice.dto.NoticeDTO;
 import com.laidekuai.notice.service.NoticeService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,11 +25,19 @@ public class NoticeController {
     /**
      * 获取已发布公告
      */
-    @GetMapping("/api/notices")
+    @GetMapping("/notices")
     public Result<PageResult<NoticeDTO>> listPublishedNotices(
             @RequestParam(defaultValue = "1") Long page,
             @RequestParam(defaultValue = "10") Long size) {
         return noticeService.listPublishedNotices(page, size);
+    }
+
+    /**
+     * 公告详情（已发布）
+     */
+    @GetMapping("/notices/{id}")
+    public Result<NoticeDTO> getNoticeDetail(@PathVariable Long id) {
+        return noticeService.getPublishedNotice(id);
     }
 
     // 管理员接口
@@ -36,7 +45,8 @@ public class NoticeController {
     /**
      * 管理员获取所有公告
      */
-    @GetMapping("/api/admin/notices")
+    @GetMapping("/admin/notices")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<PageResult<NoticeDTO>> listAllNotices(
             @RequestParam(defaultValue = "1") Long page,
             @RequestParam(defaultValue = "10") Long size) {
@@ -46,7 +56,8 @@ public class NoticeController {
     /**
      * 创建公告
      */
-    @PostMapping("/api/admin/notices")
+    @PostMapping("/admin/notices")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> createNotice(@RequestBody NoticeForm form) {
         return noticeService.createNotice(form.getTitle(), form.getContent());
     }
@@ -54,7 +65,8 @@ public class NoticeController {
     /**
      * 更新公告
      */
-    @PutMapping("/api/admin/notices/{id}")
+    @PutMapping("/admin/notices/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> updateNotice(@PathVariable Long id, @RequestBody NoticeForm form) {
         return noticeService.updateNotice(id, form.getTitle(), form.getContent());
     }
@@ -62,7 +74,8 @@ public class NoticeController {
     /**
      * 删除公告
      */
-    @DeleteMapping("/api/admin/notices/{id}")
+    @DeleteMapping("/admin/notices/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> deleteNotice(@PathVariable Long id) {
         return noticeService.deleteNotice(id);
     }
@@ -70,7 +83,8 @@ public class NoticeController {
     /**
      * 发布公告
      */
-    @PostMapping("/api/admin/notices/{id}/publish")
+    @PostMapping("/admin/notices/{id}/publish")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> publishNotice(@PathVariable Long id) {
         return noticeService.publishNotice(id);
     }
@@ -78,7 +92,8 @@ public class NoticeController {
     /**
      * 下线公告
      */
-    @PostMapping("/api/admin/notices/{id}/offline")
+    @PostMapping("/admin/notices/{id}/offline")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> offlineNotice(@PathVariable Long id) {
         return noticeService.offlineNotice(id);
     }

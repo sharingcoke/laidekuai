@@ -36,6 +36,12 @@ const routes = [
     meta: { title: '商品详情 - 来得快' }
   },
   {
+    path: '/notices/:id',
+    name: 'NoticeDetail',
+    component: () => import('@/views/notice/NoticeDetail.vue'),
+    meta: { title: '公告详情 - 来得快' }
+  },
+  {
     path: '/cart',
     name: 'Cart',
     component: () => import('@/views/cart/CartList.vue'),
