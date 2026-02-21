@@ -68,6 +68,17 @@ const handleDelete = (id) => {
     }).catch(() => {})
 }
 
+const handleWithdraw = (id) => {
+    ElMessageBox.confirm('确定撤回该商品的审核吗?', '提示', { type: 'warning' })
+    .then(async () => {
+        const res = await goodsApi.delete(id)
+        if (res.code === 0) {
+            ElMessage.success('撤回成功')
+            fetchMyGoods()
+        }
+    }).catch(() => {})
+}
+
 const handleOffline = (id) => {
     ElMessageBox.confirm('确定要下架该商品吗?', '提示', { type: 'warning' })
     .then(async () => {
@@ -173,6 +184,10 @@ onMounted(() => {
                     <template v-if="row.status === 'DRAFT' || row.status === 'REJECTED' || row.status === 'OFFLINE'">
                          <el-button link type="primary" :icon="Edit" @click="handleEdit(row.id)">编辑</el-button>
                          <el-button link type="danger" :icon="Delete" @click="handleDelete(row.id)">删除</el-button>
+                    </template>
+
+                    <template v-if="row.status === 'PENDING'">
+                         <el-button link type="warning" :icon="Delete" @click="handleWithdraw(row.id)">撤回</el-button>
                     </template>
                     
                     <template v-if="row.status === 'DRAFT' || row.status === 'REJECTED'">
