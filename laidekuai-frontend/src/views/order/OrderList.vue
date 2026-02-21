@@ -54,16 +54,8 @@ const handleCurrentChange = (page) => {
 /**
  * 支付
  */
-const handlePay = async (orderId) => {
-  try {
-    const res = await orderApi.pay(orderId)
-    if (res.code === 0) {
-      ElMessage.success('支付成功')
-      fetchOrders()
-    }
-  } catch (error) {
-    console.error('支付失败:', error)
-  }
+const handlePay = (orderId) => {
+  router.push(`/order/pay/${orderId}`)
 }
 
 /**
@@ -171,11 +163,11 @@ onMounted(() => {
       <el-tab-pane label="已完成" name="COMPLETED"></el-tab-pane>
     </el-tabs>
 
-    <div class="order-list" v-loading="loading">
+    <div class="order-list stagger-enter" v-loading="loading">
       <el-empty v-if="!loading && orderList.length === 0" description="暂无订单" />
       
-      <div v-else class="order-item" v-for="order in orderList" :key="order.id">
-        <div class="order-header">
+      <div v-else class="order-item list-item-card" v-for="order in orderList" :key="order.id">
+        <div class="order-header list-item-head">
           <span class="order-no">订单号: {{ order.orderNo }}</span>
           <span class="create-time">{{ order.createdAt }}</span>
           <span class="seller">卖家: {{ order.items[0]?.sellerName || '未知' }}</span>
@@ -232,31 +224,6 @@ onMounted(() => {
   margin-bottom: 18px;
 }
 
-.order-item {
-  margin-bottom: 14px;
-  border-radius: 12px;
-  border: 1px solid var(--ldk-border);
-  background: #fff;
-  box-shadow: var(--ldk-shadow-sm);
-  overflow: hidden;
-}
-
-.order-header {
-  padding: 12px 18px;
-  background: #f9fbff;
-  border-bottom: 1px solid var(--ldk-border);
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: var(--ldk-text-secondary);
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.status-tag {
-  margin-left: auto;
-}
-
 .order-body {
   padding: 18px;
   display: flex;
@@ -293,7 +260,7 @@ onMounted(() => {
 }
 
 .goods-price {
-  color: #999;
+  color: var(--ldk-text-secondary);
   font-size: 13px;
 }
 
@@ -313,7 +280,7 @@ onMounted(() => {
 
 .shipping {
   font-size: 12px;
-  color: #999;
+  color: var(--ldk-text-secondary);
   margin-top: 5px;
 }
 

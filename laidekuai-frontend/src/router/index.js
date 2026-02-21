@@ -54,6 +54,12 @@ const routes = [
     meta: { title: '确认订单 - 来得快', requiresAuth: true }
   },
   {
+    path: '/order/pay/:id',
+    name: 'OrderPay',
+    component: () => import('@/views/order/OrderPay.vue'),
+    meta: { title: '订单支付 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/orders',
     name: 'OrderList',
     component: () => import('@/views/order/OrderList.vue'),

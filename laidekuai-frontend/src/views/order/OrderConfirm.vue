@@ -100,8 +100,12 @@ const submitOrder = async () => {
       sessionStorage.removeItem('checkoutItems')
       
       // 跳转订单列表或支付页
-      // 这里可以优化为：如果有支付页，跳转去支付。V1先跳列表。
-      router.push('/orders')
+      const orders = res.data || []
+      if (Array.isArray(orders) && orders.length === 1) {
+        router.push(`/order/pay/${orders[0].id}`)
+      } else {
+        router.push('/orders')
+      }
     }
   } catch (error) {
     console.error('创建订单失败:', error)
@@ -166,7 +170,7 @@ const saveAddress = async () => {
         <el-button type="primary" link @click="showAddAddress">新增地址</el-button>
       </div>
       
-      <div class="address-list" v-if="addressList.length > 0">
+      <div class="address-list stagger-enter" v-if="addressList.length > 0">
         <div 
           v-for="addr in addressList" 
           :key="addr.id" 
@@ -259,21 +263,6 @@ const saveAddress = async () => {
   margin-bottom: 18px;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--ldk-border);
-  padding-bottom: 12px;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--ldk-text-primary);
-}
-
 .address-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -320,11 +309,11 @@ const saveAddress = async () => {
   position: absolute;
   right: 10px;
   top: 10px;
-  background: #f56c6c;
+  background: var(--ldk-primary);
   color: white;
   font-size: 12px;
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .subtotal {
