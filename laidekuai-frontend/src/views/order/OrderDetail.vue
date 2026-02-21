@@ -21,6 +21,13 @@ const canRefund = computed(() => {
   return order.value?.status === 'PAID' && !hasShippedItems.value
 })
 
+const showRefundDetail = computed(() => {
+  if (!order.value) return false
+  return order.value.status === 'REFUNDING'
+    || order.value.status === 'REFUNDED'
+    || (order.value.refundRequestCount || 0) > 0
+})
+
 const fetchDetail = async () => {
   loading.value = true
   try {
@@ -83,6 +90,11 @@ const handleRefund = async () => {
       }
     }
   } catch (error) {}
+}
+
+const handleRefundDetail = () => {
+  if (!order.value) return
+  router.push(`/orders/${order.value.id}/refund`)
 }
 
 const handleDisputeDetail = () => {
@@ -179,6 +191,7 @@ onMounted(() => {
         <el-button v-if="order.status === 'PENDING_PAY'" @click="handleCancel">取消订单</el-button>
         <el-button v-if="order.status === 'SHIPPED'" type="success" @click="handleReceive">确认收货</el-button>
         <el-button v-if="order.status === 'PAID'" :disabled="!canRefund" @click="handleRefund">申请退款</el-button>
+        <el-button v-if="showRefundDetail" @click="handleRefundDetail">退款详情</el-button>
         <el-button v-if="isDisputed" @click="handleDisputeDetail">查看争议详情</el-button>
       </div>
       <div v-if="order.status === 'REFUNDING'" class="muted">退款审核中，等待卖家或管理员处理。</div>

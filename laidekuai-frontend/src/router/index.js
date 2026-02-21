@@ -78,6 +78,12 @@ const routes = [
     meta: { title: '订单详情 - 来得快', requiresAuth: true }
   },
   {
+    path: '/orders/:id/refund',
+    name: 'OrderRefundDetail',
+    component: () => import('@/views/order/RefundDetail.vue'),
+    meta: { title: '退款详情 - 来得快', requiresAuth: true }
+  },
+  {
     path: '/reviews/my',
     name: 'MyReviews',
     component: () => import('@/views/review/ReviewList.vue'),
