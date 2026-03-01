@@ -37,6 +37,8 @@ npm run build
 - buyer refund detail route loads without runtime error.
 - run release smoke script and require `SMOKE_ALL_OK`:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-smoke.ps1 -BaseUrl http://127.0.0.1:9090`
+- run RBAC + state-machine smoke script and require `RBAC_STATE_ALL_OK`:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-rbac-state.ps1 -BaseUrl http://127.0.0.1:9090 -EnableStateChecks true -BuyerToken <buyer-token> -SellerToken <seller-token> -IllegalPayOrderId <order-id> -IllegalCancelOrderId <order-id> -IllegalRefundOrderId <order-id> -IllegalShipOrderItemId <order-item-id>`
 - run `k6` smoke script and verify success/failure checks both pass:
   - `k6 run -e BASE_URL=http://127.0.0.1:9090/api deliverables/perf/k6-core-smoke.js`
 
