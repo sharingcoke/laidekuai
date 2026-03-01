@@ -34,6 +34,8 @@ npm run build
 - admin disputes and admin audit logs endpoints return 200 for admin token.
 - admin scheduler metrics endpoint returns counters for timeout scan/cancel.
 - buyer refund detail route loads without runtime error.
+- run release smoke script and require `SMOKE_ALL_OK`:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-smoke.ps1 -BaseUrl http://127.0.0.1:9090`
 - run `k6` smoke script and verify success/failure checks both pass:
   - `k6 run -e BASE_URL=http://127.0.0.1:9090/api deliverables/perf/k6-core-smoke.js`
 
