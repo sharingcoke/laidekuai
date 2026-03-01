@@ -1,0 +1,112 @@
+﻿{
+  "info": {
+    "name": "Laidekuai Core API Minimal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"buyer1\",\n  \"password\": \"Password123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Goods List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/goods?page=1&size=10"
+      }
+    },
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"addressId\": 1,\n  \"items\": [{ \"goodsId\": 1, \"quantity\": 1 }],\n  \"remark\": \"please pack well\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Apply Refund",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/orders/1/refund",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"未发货想取消\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Message List New Route",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/goods/1/messages?page=1&size=10&purchased_only=false"
+      }
+    },
+    {
+      "name": "Message List Compat Route",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/messages/goods/1?page=1&size=10&purchased_only=false"
+      }
+    },
+    {
+      "name": "Upload File",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/upload",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "/path/to/demo.jpg" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Admin Disputes",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/admin/disputes?page=1&size=10"
+      }
+    },
+    {
+      "name": "Admin Audit Logs",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/admin/audit-logs?page=1&size=10"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:9090/api" },
+    { "key": "token", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ]
+}

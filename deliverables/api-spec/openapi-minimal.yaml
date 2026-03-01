@@ -1,0 +1,123 @@
+﻿openapi: 3.0.3
+info:
+  title: Laidekuai Minimal API
+  version: 1.0.0
+  description: Minimal contract for core integration paths.
+servers:
+  - url: http://127.0.0.1:9090/api
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login result
+  /goods:
+    get:
+      summary: List approved goods
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Goods page
+    post:
+      summary: Publish goods
+      responses:
+        '200':
+          description: Publish result
+  /orders:
+    post:
+      summary: Create order
+      responses:
+        '200':
+          description: Create result
+    get:
+      summary: Buyer order list
+      responses:
+        '200':
+          description: Order page
+  /orders/{id}/refund:
+    post:
+      summary: Apply refund
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Refund apply result
+  /goods/{goodsId}/messages:
+    get:
+      summary: Message board list (new route)
+      parameters:
+        - in: path
+          name: goodsId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Message page
+  /messages/goods/{goodsId}:
+    get:
+      deprecated: true
+      summary: Message board list (compatible route)
+      parameters:
+        - in: path
+          name: goodsId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Message page
+  /upload:
+    post:
+      summary: Upload file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload result with /static/files path
+  /admin/disputes:
+    get:
+      summary: Admin dispute list
+      responses:
+        '200':
+          description: Dispute page
+  /admin/audit-logs:
+    get:
+      summary: Admin audit log list
+      responses:
+        '200':
+          description: Audit page
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
