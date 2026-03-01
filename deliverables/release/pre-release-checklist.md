@@ -10,6 +10,8 @@
   - for full release gate (db + maven): `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/check-env.ps1 -RequireMySql true -RequireMaven true`
 - run profile isolation + jwt strictness guard:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-config-guard.ps1`
+- run database index guard:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-db-indexes.ps1 -DbHost 127.0.0.1 -DbPort 3306 -DbUser <user> -DbPassword <password> -DbName laidekuai`
 
 ## Deploy Commands
 
