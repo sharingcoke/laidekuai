@@ -5,6 +5,8 @@
 - verify MySQL connectivity and account privilege for Flyway.
 - verify backup exists for production schema before deployment.
 - verify no pending local changes in deployment branch.
+- run environment dependency check before release:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/check-env.ps1`
 
 ## Deploy Commands
 
