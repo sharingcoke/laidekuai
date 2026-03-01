@@ -1,5 +1,4 @@
-# 来得快二手交易平台 - 主配置文件
-server:
+﻿server:
   port: ${PORT:9090}
   address: 0.0.0.0
   servlet:
@@ -8,15 +7,9 @@ server:
 spring:
   application:
     name: laidekuai
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  # 数据源配置
-  datasource:
-    driver-class-name: ${DB_DRIVER:org.h2.Driver}
-    url: ${DB_URL:jdbc:h2:mem:laidekuai;MODE=MySQL;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
-
-  # Flyway配置
   flyway:
     enabled: ${FLYWAY_ENABLED:true}
     baseline-on-migrate: true
@@ -24,20 +17,17 @@ spring:
     encoding: UTF-8
     validate-on-migrate: true
 
-  # 文件上传配置
   servlet:
     multipart:
       enabled: true
       max-file-size: 20MB
       max-request-size: 20MB
 
-  # Jackson配置
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
     default-property-inclusion: non_null
 
-# MyBatis Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.laidekuai.*.entity
@@ -51,7 +41,6 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# 日志配置
 logging:
   level:
     root: INFO
@@ -60,27 +49,22 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
 
-# 应用配置
 app:
-  # JWT配置
   jwt:
-    secret: laidekuai-secret-key-20260131-do-not-change-in-production
-    expiration: 604800000  # 7天（毫秒）
+    secret: ${JWT_SECRET:laidekuai-secret-key-20260131-do-not-change-in-production}
+    expiration: 604800000
     header: Authorization
     prefix: "Bearer "
 
-  # 文件上传配置
   upload:
     path: ${UPLOAD_PATH:uploads/}
     allowed-types: ${UPLOAD_ALLOWED_TYPES:jpg,jpeg,png,webp}
-    max-size: ${UPLOAD_MAX_SIZE:20971520}  # 20MB（字节）
+    max-size: ${UPLOAD_MAX_SIZE:20971520}
 
-  # 订单配置
   order:
-    timeout-minutes: 15  # 订单超时时间（分钟）
-    max-active-orders: 10  # 最大活跃订单数
+    timeout-minutes: 15
+    max-active-orders: 10
 
-# 管理员配置
 admin:
   reset:
     default-password: 123456
