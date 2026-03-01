@@ -12,6 +12,8 @@
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-config-guard.ps1`
 - run database index guard:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-db-indexes.ps1 -DbHost 127.0.0.1 -DbPort 3306 -DbUser <user> -DbPassword <password> -DbName laidekuai`
+- run flyway history guard:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-flyway-history.ps1 -DbHost 127.0.0.1 -DbPort 3306 -DbUser <user> -DbPassword <password> -DbName laidekuai`
 
 ## Deploy Commands
 
