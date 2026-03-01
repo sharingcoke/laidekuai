@@ -45,5 +45,6 @@ Host C: db
 
 ## Observability Baseline
 - app logs include order timeout cancel counts and scheduler scan counts.
+- admin metrics endpoint `/api/admin/system/metrics/scheduler` exposes in-memory scheduler counters.
 - nginx access log retained for API audit and incident replay.
 - MySQL slow query log enabled in non-dev environments.

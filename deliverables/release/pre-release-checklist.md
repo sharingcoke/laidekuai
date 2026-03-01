@@ -30,6 +30,7 @@ npm run build
 - goods list API returns data.
 - upload API returns `/static/files/...` URL.
 - admin disputes and admin audit logs endpoints return 200 for admin token.
+- admin scheduler metrics endpoint returns counters for timeout scan/cancel.
 - buyer refund detail route loads without runtime error.
 
 ## Failure Rollback

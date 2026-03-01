@@ -27,6 +27,9 @@ class OrderSchedulerTest {
     @Mock
     private OrderService orderService;
 
+    @Mock
+    private SchedulerMetrics schedulerMetrics;
+
     @Test
     void cancelTimeoutOrders_BoundaryIncluded_UsesDbTime() throws Exception {
         Order order = new Order();
@@ -43,7 +46,7 @@ class OrderSchedulerTest {
         canceled.setCancelReason("TIMEOUT");
         when(orderMapper.selectById(1L)).thenReturn(canceled);
 
-        OrderScheduler scheduler = new OrderScheduler(orderMapper, orderService);
+        OrderScheduler scheduler = new OrderScheduler(orderMapper, orderService, schedulerMetrics);
         setField(scheduler, "timeoutMinutes", 15);
 
         ArgumentCaptor<QueryWrapper<Order>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
@@ -52,6 +55,7 @@ class OrderSchedulerTest {
 
         verify(orderMapper).selectList(captor.capture());
         verify(orderService).cancelOrderSystem(1L);
+        verify(schedulerMetrics).recordRun(eq(1), eq(1), anyLong());
 
         String custom = String.valueOf(captor.getValue().getCustomSqlSegment());
         assertTrue(custom.contains("DATE_SUB"), "sql=" + custom);
@@ -68,12 +72,13 @@ class OrderSchedulerTest {
 
         when(orderMapper.selectList(any())).thenReturn(List.of(order));
 
-        OrderScheduler scheduler = new OrderScheduler(orderMapper, orderService);
+        OrderScheduler scheduler = new OrderScheduler(orderMapper, orderService, schedulerMetrics);
         setField(scheduler, "timeoutMinutes", 15);
 
         scheduler.cancelTimeoutOrders();
 
         verify(orderService, never()).cancelOrderSystem(anyLong());
+        verify(schedulerMetrics).recordRun(eq(1), eq(0), anyLong());
     }
 
     private static void setField(Object target, String fieldName, Object value) throws Exception {

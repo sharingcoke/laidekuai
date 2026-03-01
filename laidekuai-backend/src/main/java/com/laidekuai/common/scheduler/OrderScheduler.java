@@ -25,6 +25,7 @@ public class OrderScheduler {
 
     private final OrderMapper orderMapper;
     private final OrderService orderService;
+    private final SchedulerMetrics schedulerMetrics;
 
     private static final int SCAN_LIMIT = 200;
 
@@ -36,6 +37,7 @@ public class OrderScheduler {
      */
     @Scheduled(cron = "0 0/1 * * * ?")
     public void cancelTimeoutOrders() {
+        long startMs = System.currentTimeMillis();
         log.debug("开始检查超时订单...");
 
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
@@ -68,6 +70,8 @@ public class OrderScheduler {
             }
         }
 
-        log.info("超时订单扫描 {} 条，成功取消 {} 条", timeoutOrders.size(), canceledCount);
+        long durationMs = System.currentTimeMillis() - startMs;
+        schedulerMetrics.recordRun(timeoutOrders.size(), canceledCount, durationMs);
+        log.info("超时订单扫描 {} 条，成功取消 {} 条，耗时 {}ms", timeoutOrders.size(), canceledCount, durationMs);
     }
 }
