@@ -14,6 +14,8 @@
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-db-indexes.ps1 -DbHost 127.0.0.1 -DbPort 3306 -DbUser <user> -DbPassword <password> -DbName laidekuai`
 - run flyway history guard:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-flyway-history.ps1 -DbHost 127.0.0.1 -DbPort 3306 -DbUser <user> -DbPassword <password> -DbName laidekuai`
+- run scheduler runtime guard (with admin token):
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/verify-scheduler-runtime.ps1 -BaseUrl http://127.0.0.1:9090 -AdminToken <admin-token> -WaitSeconds 65 -CheckIncrement true`
 
 ## Deploy Commands
 
