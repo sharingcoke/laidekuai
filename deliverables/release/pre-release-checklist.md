@@ -7,6 +7,7 @@
 - verify no pending local changes in deployment branch.
 - run environment dependency check before release:
   - `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/check-env.ps1`
+  - for full release gate (db + maven): `powershell -NoProfile -ExecutionPolicy Bypass -File deliverables/release/check-env.ps1 -RequireMySql true -RequireMaven true`
 
 ## Deploy Commands
 

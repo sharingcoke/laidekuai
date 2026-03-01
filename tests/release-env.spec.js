@@ -28,3 +28,12 @@ test('env check fails when required command is missing', async () => {
   expect(output).toContain('ENV_CHECK_FAIL');
   expect(output).toContain('definitely_missing_cmd_123');
 });
+
+test('env check fails when boolean flags are invalid', async () => {
+  const result = runScript(['-RequireK6', 'bad-flag']);
+  const output = `${result.stdout}${result.stderr}`;
+
+  expect(result.status).not.toBe(0);
+  expect(output).toContain('ENV_CHECK_FAIL');
+  expect(output).toContain('RequireK6');
+});
