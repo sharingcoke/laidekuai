@@ -32,6 +32,8 @@ npm run build
 - admin disputes and admin audit logs endpoints return 200 for admin token.
 - admin scheduler metrics endpoint returns counters for timeout scan/cancel.
 - buyer refund detail route loads without runtime error.
+- run `k6` smoke script and verify success/failure checks both pass:
+  - `k6 run -e BASE_URL=http://127.0.0.1:9090/api deliverables/perf/k6-core-smoke.js`
 
 ## Failure Rollback
 - rollback app binary to previous release artifact.
